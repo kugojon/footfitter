@@ -1,0 +1,65 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magento.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magento.com for more information.
+ *
+ * @category    design
+ * @package     rwd_default
+ * @copyright   Copyright (c) 2006-2014 X.commerce, Inc. (http://www.magento.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+<?php
+    /* @var $this Mage_ConfigurableSwatches_Block_Catalog_Media_Js_Abstract */
+	$isProductPage = Mage::registry('current_product');
+	if($isProductPage){
+		$_product = $isProductPage;
+		$meigee_harbour_productpage = MAGE::helper('ThemeOptionsHarbour')->getThemeOptionsHarbour('meigee_harbour_productpage');
+		$productpage_sku = $meigee_harbour_productpage['general']['product_sku'];
+		$isSku = false;
+		if($_product->getHarbourPrsku() < 2 ){
+			if($_product->getHarbourPrsku() == 1 or $productpage_sku){
+				$isSku = true;
+			}
+		}
+	}
+?>
+
+<script type="text/javascript">
+	<?php if($isSku): ?>
+	var skuArray = new Array();
+	<?php endif; ?>
+    $j(document).on('product-media-loaded', function() {
+        ConfigurableMediaImages.init('<?php echo $this->getImageType(); ?>');
+        <?php foreach ($this->getProductImageFallbacks() as $imageFallback): ?>
+        ConfigurableMediaImages.setImageFallback(<?php echo $imageFallback['product']->getId(); ?>, $j.parseJSON('<?php echo $imageFallback['image_fallback']; ?>'));
+		<?php
+			if($isSku){
+				$allProducts = json_decode($imageFallback['image_fallback'], true)['base_image'];
+				foreach($allProducts as $id => $value){
+					$skuProduct = Mage::getModel('catalog/product')->load($id);
+					?>
+					skuArray['<?php echo $id; ?>'] = '<?php echo $skuProduct->getSku(); ?>';
+					<?php
+				}
+			}
+		?>
+        <?php endforeach; ?>
+        $j(document).trigger('configurable-media-images-init', ConfigurableMediaImages);
+    });
+</script>
