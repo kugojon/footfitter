@@ -1,0 +1,5 @@
+<?php // Tabs
+$tweets = $this->getLatestTweets();
+?>
+<a class="twitter-timeline" href="https://twitter.com/<?php echo $tweets['twitter_username']; ?>" data-chrome="noscrollbar noheader nofooter noborders transparent" data-tweet-limit="<?php echo $tweets['tweet_limit']; ?>" data-show-replies="false">Tweets by @<?php echo $tweets['twitter_username']; ?></a>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>

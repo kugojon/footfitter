@@ -1,0 +1,123 @@
+<?php
+/**
+ * Magento
+ *
+ * @category    design
+ * @package     meigeetheme_default
+ * @copyright   Copyright (c) 2012 MeigeeTeam. (http://www.meigeeteam.com)
+ */
+$random = rand(5, 1500);
+$meigee_harbour_general = MAGE::helper('ThemeOptionsHarbour')->getThemeOptionsHarbour('meigee_harbour_general');
+$fields = $meigee_harbour_general['newsletterform'];
+$location = $this->getData('location');
+$firstname = $fields['firstname'];
+$lastname = $fields['lastname'];
+
+if($location == 'sidebar'){
+	if($firstname == 2 or $firstname == 3){
+		$firstname = true;
+	}else{
+		$firstname = false;
+	}
+	
+	if($lastname == 2 or $lastname == 3){
+		$lastname = true;
+	}else{
+		$lastname = false;
+	}
+}else{
+	if($firstname == 1 or $firstname == 3){
+		$firstname = true;
+	}else{
+		$firstname = false;
+	}
+	
+	if($lastname == 1 or $lastname == 3){
+		$lastname = true;
+	}else{
+		$lastname = false;
+	}
+}
+?>
+<div class="block block-subscribe<?php if($firstname){echo ' firstname-field';} if($lastname){echo ' lastname-field';} ?>">
+	<div class="block-title">
+		<strong>
+			<span><?php echo $this->__('Newsletter') ?></span>
+		</strong>
+	</div>
+    <form action="<?php echo $this->getFormActionUrl() ?>" method="post" id="newsletter-validate-detail_<?php echo $random; ?>">
+        <div class="block-content">
+            <div class="form-subscribe-header">
+                <label for="newsletter_<?php echo $random; ?>"><?php echo $this->__('Subscribe to the weekly FootFitter newsletter for updates on new arrivals, special offers, and expert shoe and foot care advice.') ?></label>
+            </div>
+			<?php if($firstname): ?>
+			<div class="input-box first-field">
+				<input type="text" name="firstname" id="firstname" class="input-text" data-placeholder="<?php echo $this->__('First Name') ?>" value="<?php echo $this->__('First Name') ?>" onblur="if (this.value=='') this.value = '<?php echo $this->__('First Name') ?>'" onfocus="if (this.value=='<?php echo $this->__('First Name') ?>') this.value = ''" />
+			</div>
+			<?php endif; ?>
+			<?php if($lastname): ?>
+			<div class="input-box<?php if($firstname){echo ' second-field';}else{echo ' first-field';} ?>">
+				<input type="text" name="lastname" id="lastname" class="input-text" data-placeholder="<?php echo $this->__('Last Name') ?>" value="<?php echo $this->__('Last Name') ?>" onblur="if (this.value=='') this.value = '<?php echo $this->__('Last Name') ?>'" onfocus="if (this.value=='<?php echo $this->__('Last Name') ?>') this.value = ''" />
+			</div>
+			<?php endif; ?>
+            <div class="input-box<?php if($firstname or $lastname)if(!$firstname or !$lastname){echo ' second-field';} ?>">
+               <input type="text" name="email" id="newsletter_<?php echo $random; ?>" title="<?php echo Mage::helper('core')->quoteEscape($this->__('Sign up for our newsletter')) ?>" value="<?php echo $this->__('Enter your email'); ?>" onfocus="if (this.value=='<?php echo $this->__('Enter your email'); ?>') this.value = ''" onblur="if (this.value=='') this.value = '<?php echo $this->__('Enter your email'); ?>'" class="input-text required-entry validate-email" value="<?php echo $this->__('Email') ?>" onblur="if (this.value=='') this.value = '<?php echo $this->__('Email') ?>'" onfocus="if (this.value=='<?php echo $this->__('Email') ?>') this.value = ''" />
+            </div>
+            <div class="actions">
+                <button type="submit" title="<?php echo Mage::helper('core')->quoteEscape($this->__('Subscribe')) ?>" class="button"><span><i class="fa fa-chevron-right"></i><span><?php echo $this->__('Subscribe'); ?></span></span></button>
+            </div>
+        </div>
+    </form>
+    <script type="text/javascript">
+	jQuery('.block-subscribe button.button').on('click', function(){
+		jQuery('#firstname, #lastname').each(function(){
+			if(jQuery(this).attr('data-placeholder') == jQuery(this).attr('value')){
+				jQuery(this).attr('value', '');
+			}
+		});
+		setTimeout(function(){
+			if(jQuery('#newsletter_<?php echo $random; ?>').hasClass('validation-failed') ){
+				jQuery('#firstname, #lastname').each(function(){
+					if(jQuery(this).attr('value') == ''){
+						jQuery(this).attr('value', jQuery(this).attr('data-placeholder'));
+					}
+				});
+			}
+		}, 10);
+		<?php if($location != 'sidebar'): ?>
+		setTimeout(function(){
+			jQuery('#popup-block .input-box .validation-advice').removeClass('active').attr('style', '');
+			if(jQuery('#popup-block .input-box .validation-advice').length > 1){
+				if(jQuery('#newsletter_<?php echo $random; ?>').attr('value') == ''){
+					jQuery('#popup-block .input-box .validation-advice').first().addClass('active');
+				}else{
+					jQuery('#popup-block .input-box .validation-advice').eq(1).addClass('active');
+				}
+			}else{
+				jQuery('#popup-block .input-box .validation-advice').addClass('active');
+			}
+			activeMsg = jQuery('#popup-block .input-box .validation-advice.active');
+			if(parseFloat(activeMsg.css('min-height')) < activeMsg.height()){
+				activeMsg.css('bottom', '-'+activeMsg.height()+'px');
+			}
+		}, 1200);
+		<?php endif; ?>
+	});
+	
+    //<![CDATA[
+        var newsletterSubscriberFormDetail = new VarienForm('newsletter-validate-detail_<?php echo $random; ?>');
+    //]]>
+	if(jQuery('.block-subscribe').parents('#popup-block').length) {
+		jQuery('#popup-block .block-subscribe .actions button.button').on('click', function(){
+			var button = jQuery(this);
+			setTimeout(function(){
+				if(!button.parent().find('input#newsletter_<?php echo $random; ?>').hasClass('validation-failed')){
+					jQuery.cookie('harbourPopupFlag', 'true', {
+						path: '/'
+					});
+				}
+			}, 500);
+		});
+	}
+    </script>
+</div>

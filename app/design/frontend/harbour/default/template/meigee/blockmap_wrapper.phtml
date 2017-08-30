@@ -1,0 +1,17 @@
+<?php
+	$meigee_harbour_general = MAGE::helper('ThemeOptionsHarbour')->getThemeOptionsHarbour('meigee_harbour_general');
+	$contactMap = $meigee_harbour_general['contactmap']['map'];
+?>
+<p style="display:none;"><?php echo $this->getUrl('meigeeactions/map/'); ?></p>
+<p>---</p>
+<?php if($contactMap): ?>
+<div class="contact-map0" style="position: relative;height: 360px;">
+	<iframe id="contact-map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3321.9462947397633!2d-117.93992398434806!3d33.632634480722224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80dd206d997a1b05%3A0xcc8d5f4fd17e2b18!2s930+W+16th+St%2C+Costa+Mesa%2C+CA+92627!5e0!3m2!1svi!2s!4v1491812414861" width="100%" height="100%">
+	</iframe>
+</div>
+<?php endif; ?>
+<script type="text/javascript">
+	jQuery(window).load(function() {
+		jQuery('.contact-map0').append('<div class="map-block right-bottom" style="width: 216px;height:130px;position: absolute;right: 44px;bottom: 22px;background-color: #FFFFFF;padding-left: 15px;padding-right: 15px;"><div class="indent"><div class="block-title" style="border-bottom: 1px solid;padding-top: 12px;"><h2 style="font-weight: bold;">Our address</h2></div><p style="padding-top: 8px;">930 West 16th Street, Suite C2<br>Costa Mesa, CA 92627<br>Phone : 800-871-4624<br> Email : <a href="mailto:info@footfitter.com">info@footfitter.com</a></p></div></div>');
+	});
+</script>

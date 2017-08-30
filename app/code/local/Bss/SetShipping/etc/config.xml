@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Bss_SetShipping>
+      <version>0.1.0</version>
+    </Bss_SetShipping>
+  </modules>
+  <global>
+    <helpers>
+      <setshipping>
+        <class>Bss_SetShipping_Helper</class>
+      </setshipping>
+    </helpers>
+	<models>
+	  <setshipping>
+		<class>Bss_SetShipping_Model</class>
+		<resourceModel>setshipping_mysql4</resourceModel>
+	  </setshipping>
+	</models>
+  </global>
+    <frontend>
+        <events>
+          <controller_action_predispatch_paypal_express_review> 
+            <observers>
+              <setshipping_controller_action_predispatch>
+                <class>setshipping/observer</class>
+                <method>setShipping</method>
+              </setshipping_controller_action_predispatch>
+            </observers>
+          </controller_action_predispatch_paypal_express_review>
+        </events>
+    </frontend>
+</config> 
