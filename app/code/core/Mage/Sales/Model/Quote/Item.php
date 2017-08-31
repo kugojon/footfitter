@@ -20,7 +20,7 @@
  *
  * @category    Mage
  * @package     Mage_Sales
- * @copyright  Copyright (c) 2006-2015 X.commerce, Inc. (http://www.magento.com)
+ * @copyright  Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -508,8 +508,9 @@ class Mage_Sales_Model_Quote_Item extends Mage_Sales_Model_Quote_Item_Abstract
                             $itemOptionValue = $_itemOptionValue;
                             $optionValue = $_optionValue;
                             // looks like it does not break bundle selection qty
-                            unset($itemOptionValue['qty'], $itemOptionValue['uenc']);
-                            unset($optionValue['qty'], $optionValue['uenc']);
+                            foreach (array('qty', 'uenc', 'form_key', 'item', 'original_qty') as $key) {
+                                unset($itemOptionValue[$key], $optionValue[$key]);
+                            }
                         }
 
                     } catch (Exception $e) {
