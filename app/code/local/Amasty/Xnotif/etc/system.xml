@@ -44,7 +44,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </customer_name> 
-                        <!--send_observer translate="label comment">
+                        <send_observer translate="label comment">
                             <label>Check Subscriptions After Product Update</label>
                             <comment>The module will check if anyone subscribed for the product, that has just been edited and will send notifications when appropriate.</comment>
                             <frontend_type>select</frontend_type>
@@ -53,7 +53,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </send_observer-->
+                        </send_observer>
                     </fields>                    
                 </general> 
                 <stock translate="label">

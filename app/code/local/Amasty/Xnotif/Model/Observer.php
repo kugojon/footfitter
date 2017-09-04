@@ -113,6 +113,7 @@ class Amasty_Xnotif_Model_Observer extends Mage_ProductAlert_Model_Observer
                                 $customer->setFirstname(Mage::getStoreConfig('amxnotif/general/customer_name'));
                                 $customer->setGroupId(0);
                                 $customer->setId(0);
+                                $customer->setStoreId($website->getDefaultStore()->getId());
                             }
                         }
                         else{
@@ -162,6 +163,29 @@ class Amasty_Xnotif_Model_Observer extends Mage_ProductAlert_Model_Observer
                             $alert->setStatus(1);
                             $alert->save();
                         }
+                        if ($product->getTypeId() == 'configurable' && $product->getData('is_in_stock')) {
+                            $needSendAlert = false;
+                            $childrenProducts = Mage::getModel('catalog/product_type_configurable')
+                                                    ->getUsedProducts(null,$product);
+                            foreach ($childrenProducts as $child) {
+                                $child = Mage::getModel('catalog/product')
+                                        ->setStoreId($website->getDefaultStore()->getId())
+                                        ->load($child->getId());
+                                if ($child->isSalable()) {
+                                    $needSendAlert = true;
+                                }
+                            }
+                            if ($needSendAlert) {
+                                $email->addStockProduct($product);
+                                $alert->setSendDate(Mage::getModel('core/date')->gmtDate());
+
+                                $alert->setSendCount($alert->getSendCount() + 1);
+                                $alert->setStatus(1);
+                                $alert->save();
+                            }
+                                                 
+                        }
+
                     }
                     else{
                         if ($alert->getPrice() > $product->getFinalPrice()) {
