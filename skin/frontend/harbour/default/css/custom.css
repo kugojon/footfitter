@@ -369,25 +369,6 @@ table.table-cogift td {
         margin-top: 5px !important;
         box-sizing: border-box;
     }
-    .icon-PayPal {
-        width: 90px;
-        position: absolute;
-        top: 60px;
-        left: 50px;
-    }
-
-    .icon-GoDaddy {
-        position: absolute;
-        right: 30px;
-        top: 90px;
-    }
-
-    .icon-McAfee {
-        position: absolute;
-        bottom: 25px;
-        left: 135px;
-        width: 80px;
-    }
     .searchautocomplete .nav {width: 260px !important;}
     header#header .customer-name {padding: .75em 15px; max-width: 90px;}
     .main-container .cart.cart-2 .totals-main{
