@@ -283,6 +283,8 @@ table.table-cogift td {
     margin-left: 29px;
 }
 
+#ac-page .cards li {width: 51px !important}
+
 @media only screen and (max-width: 1278px){
 	.nav-wide ul.level0 li.level1{width:49.5%;}
 		button.international {
@@ -450,6 +452,8 @@ table.table-cogift td {
     }
 }
 @media only screen and (max-width: 767px){
+    #ac-page #checkout-progress-wrapper .progress-block {width: 32% !important;}
+    #ac-page #checkout-payment-method-load .cvv-what-is-this {left: 155px !important; top: 2px;}
     button.international {
         width: 75%!important;
         background-size: 100%;
@@ -689,6 +693,7 @@ table.table-cogift td {
 
 }
 @media only screen and (max-width: 479px){
+    #ac-page #checkout-payment-method-load .cvv-what-is-this {left: 150px !important;}
 	body .related-wrapper-bottom .block-related li.item {
     width: 355px!important;
 }

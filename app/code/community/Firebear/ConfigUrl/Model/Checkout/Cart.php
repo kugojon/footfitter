@@ -10,7 +10,7 @@ class Firebear_ConfigUrl_Model_Checkout_Cart extends Mage_Checkout_Model_Cart
      */
     public function addProduct($productInfo, $requestInfo=null)
     {
-        if($productInfo instanceof Mage_Catalog_Model_Product && isset($requestInfo['super_attribute'])) {
+        if($productInfo instanceof Mage_Catalog_Model_Product && isset($requestInfo['super_attribute']) && $productInfo->getData('type_id')== "configurable") {
             $productInfo = $productInfo->getTypeInstance(true)->getProductByAttributes($requestInfo['super_attribute'], $productInfo);
         }
         
