@@ -39,6 +39,12 @@ $disable_postcode_autocomplete = Mage::getStoreConfig( 'awesomecheckout/options/
         </div>
 
     </div>
+    <div class="payments">
+        <div class="col-left">
+            <?php echo $this->getLayout()->createBlock('internationalcheckout/international')->setTemplate('internationalcheckout/button_onepage.phtml')->toHtml(); ?>
+        </div>
+
+    </div>
     <div class="paymets-footer">
         <?php echo "<img class='img-pay-amazon' src='".Mage::getBaseUrl('media')."anattadesign/FF-Checkout-PayPal-Amazon-Buttons.jpg'/>"; ?>
         <p>Proceed with Secure Checkout below</p>
