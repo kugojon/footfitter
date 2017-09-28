@@ -23,11 +23,8 @@ if ($this->isEnabled()) {
                     </span>
                 </span> -->
             </button>	
-        <br /><br />
-        <div align="right" style="font-size:11px;float:right">
-            <div style="width:227px;margin-bottom:10px;text-align:center">
-                <?php echo $this->textBelowButton(); ?>
-            </div>
+        <div class="text-below" style="width:<?php echo $button_width; ?>px;float:left;text-align: center;margin-bottom: 20px;">
+            <?php echo $this->textBelowButton(); ?>
         </div>
 	</form>
 </div>

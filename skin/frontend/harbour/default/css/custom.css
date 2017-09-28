@@ -284,6 +284,8 @@ table.table-cogift td {
 }
 
 #ac-page .cards li {width: 51px !important}
+#nav-cover {position: absolute; width: 100vw; background: #000; left: 0; opacity: 0.5; display: none;}
+#nav-cover.active {display: block;}
 
 @media only screen and (max-width: 1278px){
 	.nav-wide ul.level0 li.level1{width:49.5%;}
@@ -360,7 +362,19 @@ table.table-cogift td {
     }
 
 }
-
+@media only screen and (max-width: 978px) {
+    .checkout-onepage-index .payments.i-checkout .col-left {
+        width: 100%!important;
+    }
+    #icForm {
+        width: 100%;
+        float: left;
+        text-align: center;
+    }
+    #icForm .text-below   {
+         width: 100%!important;
+    }
+}
 @media only screen and (max-width: 977px) and (min-width: 768px){
     .cart.cart-2 aside section.payment-wrap .items-icon img {
         margin: 0 !important;
@@ -690,7 +704,12 @@ table.table-cogift td {
         font-size: 11px;
     }
     .shipping-mess{display: none;}
-
+    .checkout-onepage-index .payments .col-left img {
+        max-width: 100%;padding-bottom: 20px;
+    }
+    #icForm button {
+        max-width: 100%;
+    }
 }
 @media only screen and (max-width: 479px){
     #ac-page #checkout-payment-method-load .cvv-what-is-this {left: 150px !important;}
