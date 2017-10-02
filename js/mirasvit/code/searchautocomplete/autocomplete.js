@@ -286,6 +286,7 @@ jQuery(function ($) {
             self.$placeholder.show();
             self.$el.addClass('active');
             self.shown = true;
+            $("#nav-cover").addClass('active');
 
             $('li', self.$placeholder).each(function (key, el) {
                 var $el = $(el);
@@ -303,7 +304,7 @@ jQuery(function ($) {
             self.$placeholder.hide();
             self.$el.removeClass('active');
             self.shown = false;
-
+            $("#nav-cover").removeClass('active');
             return this;
         },
 
