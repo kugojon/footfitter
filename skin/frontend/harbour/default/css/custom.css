@@ -285,8 +285,8 @@ table.table-cogift td {
 
 #ac-page .cards li {width: 51px !important}
 #nav-cover {position: absolute; width: 100vw; background: #000; left: 0; opacity: 0.5; display: none;}
-#nav-cover.active {display: block;}
-
+#nav-cover.active {display: block!important;}
+header#header.header-2 .nav-container{z-index: 999;}
 @media only screen and (max-width: 1278px){
 	.nav-wide ul.level0 li.level1{width:49.5%;}
 		button.international {

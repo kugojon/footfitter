@@ -221,6 +221,10 @@
     	var pageHeight = jQuery('body').height();
 	    var headerHeight = jQuery('#header').height();
 	    var coverHeight = pageHeight - headerHeight;
+	    var windowsize = jQuery(window).width();
+	    if(windowsize < 480){
+	    	headerHeight = headerHeight + 10;
+	    }
 	    jQuery("#nav-cover").css({'height': coverHeight+'px', 'top': headerHeight+'px'});
 	});
 	jQuery(".nav-wide li.level-top.parent, header.header .top-cart .block-title").mouseover(function() {
