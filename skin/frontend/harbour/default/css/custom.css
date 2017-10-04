@@ -796,6 +796,9 @@ button.international{height:35px!important;width: 100%!important;}
     width: 80.7%;
 }
 
+}    
+@media only screen and (max-width: 767px){
+    .catalog-category-view .hide-768{display: none;}
 }
 @media only screen and (min-width: 768px){
     .cart .cart-table .product-box img {
