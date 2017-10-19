@@ -18,6 +18,12 @@
 ?>
 <div class ="newsletter">
 	<form id="newsletter-form" onsubmit="return false;">
-		<label><input type="checkbox" name="newsletter_subscribe" value="1" /> <?php echo $this->__( 'Subscribe to Newsletter' ); ?></label>
+		<label><input type="checkbox" name="newsletter_subscribe" value="1" /> <?php echo $this->__( 'Sign up for the FootFitter newsletter for discounts, promotions, and expert advice!' ); ?></label>
 	</form>
 </div>
+<style>
+	.newsletter #newsletter-form label {
+		font-size: 12px;
+		float: right;
+	}
+</style>
