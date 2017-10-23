@@ -42,13 +42,13 @@ if($location == 'sidebar'){
 <div class="block block-subscribe<?php if($firstname){echo ' firstname-field';} if($lastname){echo ' lastname-field';} ?>">
 	<div class="block-title">
 		<strong>
-			<span><?php echo $this->__('Newsletter') ?></span>
+			<span><?php echo $this->__('Get the Latest from FootFitter') ?></span>
 		</strong>
 	</div>
     <form action="<?php echo $this->getFormActionUrl() ?>" method="post" id="newsletter-validate-detail_<?php echo $random; ?>">
         <div class="block-content">
             <div class="form-subscribe-header">
-                <label for="newsletter_<?php echo $random; ?>"><?php echo $this->__('Subscribe to the weekly FootFitter newsletter for updates on new arrivals, special offers, and expert shoe and foot care advice.') ?></label>
+                <label for="newsletter_<?php echo $random; ?>"><?php echo $this->__('Join our FootFitter newsletter for updates on new arrivals, special offers, and expert shoe and foot care advice.') ?></label>
             </div>
 			<?php if($firstname): ?>
 			<div class="input-box first-field">
