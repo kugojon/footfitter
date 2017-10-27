@@ -6,10 +6,10 @@ if ($this->isEnabled()) {
     $ic_button_image = Mage::getBaseUrl().'media/Ic/images/'.$ic_button_image;
 
 	if($button_width == ''){$button_width = '200';}
-	if(stripos(Mage::getBaseUrl(), 'https')){
+	if(stripos(Mage::getBaseUrl(), 'http')){
 		$url = Mage::getBaseUrl();
 	}else{
-		$url = str_replace('http', 'https', Mage::getBaseUrl());		
+		$url = str_replace('http', 'http', Mage::getBaseUrl());		
 	}
 	
     

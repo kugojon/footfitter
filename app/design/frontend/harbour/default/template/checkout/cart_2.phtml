@@ -21,8 +21,8 @@
 ?>
 <div class="cart cart-2">
     <div class="shipping-mess-m">
-        <?php if($subtotal < 50): 
-            $shipping_value = 50 - $subtotal;
+        <?php if($subtotal < 35): 
+            $shipping_value = 35 - $subtotal;
             $formattedPrice = Mage::helper('core')->currency($shipping_value, true, false);
         ?>
             <p class="shipping-total"><?php echo $this->__("You're only ")?> <span style="color:#8e0000;"><?php echo $formattedPrice; ?></span> <?php echo $this->__(" away from Free Shipping!"); ?></p>
@@ -106,8 +106,8 @@
         </form>
         <div class="shipping-mess">
             <?php 
-                if($subtotal < 50): 
-                    $shipping_value = 50 - $subtotal;
+                if($subtotal < 35): 
+                    $shipping_value = 35 - $subtotal;
                     $formattedPrice = Mage::helper('core')->currency($shipping_value, true, false);
                 ?>
                     <p class="shipping-total"><span class="messchamthan">!</span><?php echo $this->__(" You're only "). $formattedPrice. $this->__(" away from Free Shipping!"); ?></p>

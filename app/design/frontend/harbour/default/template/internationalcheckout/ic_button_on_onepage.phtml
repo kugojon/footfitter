@@ -2,10 +2,10 @@
 if ($this->isEnabled()) {
 	$button_width = Mage::getStoreConfig("checkout/internationalcheckout/ic_button_width");
 	if($button_width == ''){$button_width = '200';}
-	if(stripos(Mage::getBaseUrl(), 'https')){
+	if(stripos(Mage::getBaseUrl(), 'http')){
 		$url = Mage::getBaseUrl();
 	}else{
-		$url = str_replace('http', 'https', Mage::getBaseUrl());		
+		$url = str_replace('http', 'http', Mage::getBaseUrl());		
 	}
 	
 ?>
