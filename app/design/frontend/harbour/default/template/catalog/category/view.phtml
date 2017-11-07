@@ -75,12 +75,12 @@
     <?php endif; ?>
 
 <?php if($this->isContentMode()): ?>
-    <?php echo $this->getCmsBlockHtml() ?>
-
+	<div class="hide-768 cmsblockhtml">
+    	<?php echo $this->getCmsBlockHtml() ?>
+    </div>
 <?php elseif($this->isMixedMode()): ?>
-    
     <?php echo $this->getProductListHtml() ?>
-    <div class="hide-768">
+    <div class="hide-768 cmsblockhtml">
     	<?php echo $this->getCmsBlockHtml() ?>
     </div>
 <?php else: ?>
