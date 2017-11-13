@@ -911,3 +911,12 @@ button.international{height:35px!important;width: 100%!important;}
         margin-right: 20px;
     }
 }
+
+/**Removes "Choose an Image" carousel and increases gift card value dropdown size on Gift Card Page - Jon 2017/11/10**/
+.col-xs-12 {
+    display: none;
+}
+
+.gift-card .form-control {
+    width: 300%;
+}
