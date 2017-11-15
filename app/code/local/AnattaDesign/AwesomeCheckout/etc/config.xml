@@ -131,9 +131,9 @@ along with AwesomeCheckout.  If not, see <http://www.gnu.org/licenses/>.
 				<anattadesign_awesomecheckout module="anattadesign_awesomecheckout">
 					<file>anattadesign_awesomecheckout.xml</file>
 				</anattadesign_awesomecheckout>
-				<!-- <anattadesign_awesomecheckout_virtual_support module="anattadesign_awesomecheckout">
+				<anattadesign_awesomecheckout_virtual_support module="anattadesign_awesomecheckout">
 					<file>anattadesign_awesomecheckout/virtual_support.xml</file>
-				</anattadesign_awesomecheckout_virtual_support> -->
+				</anattadesign_awesomecheckout_virtual_support>
 			</updates>
 		</layout>
 		<translate>
