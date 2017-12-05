@@ -159,6 +159,9 @@
 						<?php //endif; ?>
 						<p class="welcome-msg"><span><?php //echo $this->getWelcome() ?><?php// echo $this->getAdditionalHtml() ?></span></p>
 					</div> -->
+					<?php if($_COOKIE["shippingClose"]==""){
+						echo $this->getLayout()->createBlock('cms/block')->setBlockId('mobile-free-shipping')->toHtml();
+					} ?>
 					<?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('free-shipping')->toHtml() ?>
 				</div>
 				<div class="clear"></div>
@@ -233,5 +236,10 @@
 
 	jQuery(".nav-wide li.level-top.parent, header.header .top-cart .block-title").mouseout(function() {
 	  jQuery("#nav-cover").css('display', 'none');
+	});
+
+	jQuery(".mobile-free-close").click(function (){
+		jQuery(".mobile-active").css("display","none");
+		document.cookie = "shippingClose=close; path=/";
 	});
 </script>

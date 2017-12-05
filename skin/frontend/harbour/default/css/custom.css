@@ -15,6 +15,18 @@ p.top-free {
     font-weight: 600;
     letter-spacing: 2px;
 }
+p.mobile-active {display: none;}
+p.mobile-free-close {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+p.mobile-free-close span:before {
+    content: "\2715";
+    color: #000;
+    font-size: 15px;
+    font-weight: bold;
+}
 .header-top {
     padding: 7px;
 }
@@ -506,7 +518,10 @@ header#header.header-2 .nav-container{z-index: 999;}
     header.header .menu-line{position: absolute;}
     header.header .menu-button span i{font-size:30px;}
     header.header .top-cart .block-title i{font-size:30px;}
-    .header-top {display:none;}
+    header#header .header-top {background-color: #E7E7E7; padding: 0}
+    .header-top .top-free{display:none;}
+    .header-top .top-free.mobile-active {display: block; letter-spacing: 1px; padding: 15px 0;}
+    p.mobile-active {display: block}
     header.header .top-cart .block-title .title-cart{padding:0;}
     header#header h2.logo{padding:0;}
     .logo-mobile{display:block;text-align: center;padding-top:10px;}
