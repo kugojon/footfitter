@@ -8,8 +8,8 @@
     src: url('../fonts/TrebuchetMS.ttf');
 }
 @font-face {
-    font-family: MyriadPro-Bold;
-    src: url('../fonts/MYRIADPRO-BOLD.OTF');
+    font-family: MyriadProBold;
+    src: url('../fonts/Myriad-Pro-Bold_31631.ttf');
 }
 p.top-free {
      text-align: center;
@@ -943,11 +943,11 @@ button.international{height: 40px!important;}
 /*cart page*/
 .cart.cart-2 .btn-proceed-checkout span{height: 80px;}
 .cart.cart-2 .btn-proceed-checkout span span{    
-    font-family: "MyriadPro-Bold" !important;
+    font-family: MyriadProBold !important;
     font-weight: 900;
     text-transform: uppercase;
     font-size: 19px;
-    line-height: 82px;
+    line-height: 80px;
 }
 .block-usp-wrap{padding-top: 15px;}
 .cart .amazon-pay-button{margin: 0 !important;}
@@ -984,4 +984,5 @@ button.international{background-color: white;}
     table.cart-table td.information{position: relative;}
     .cart .totals button.button, .cart .checkout-types button.button{padding: 0 !important;}
     .cart .btn-proceed-checkout span{line-height: 55px;}
+    .cart .gift-card .form-control{width: 98%;}
 }
