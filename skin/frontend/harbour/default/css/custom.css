@@ -7,6 +7,10 @@
     font-family: TrebuchetMS;
     src: url('../fonts/TrebuchetMS.ttf');
 }
+@font-face {
+    font-family: MyriadPro-Bold;
+    src: url('../fonts/MYRIADPRO-BOLD.OTF');
+}
 p.top-free {
      text-align: center;
     font-size: 11px;
@@ -47,7 +51,7 @@ span.need_ass {
 .nav-wide ul.level0 li.level1 > a{float:none;display:inline-block;
 padding: 25px 10px;width: 65%;text-align:center;}
 
-.totals .btn-proceed-checkout span {
+.cart .btn-proceed-checkout span {
     background: url(../images/icon-clock.png);
     background-position: 28%;
     background-repeat: no-repeat;
@@ -305,13 +309,13 @@ header#header.header-2 .nav-container{z-index: 999;}
 		button.international {
     width: 100%!important;
     background-size: 100%;
-    height: 28px!important;
+    /*height: 28px!important;*/
 }
-.cart .btn-proceed-checkout span {
+/*.cart .btn-proceed-checkout span {
     height: 28px!important;
 	line-height:29px!important;
-}
-.totals .btn-proceed-checkout span{background-position: 10%;}
+}*/
+.cart .btn-proceed-checkout span{background-position: 10%;}
 }
 
 @media only screen and (max-width: 1278px) and (min-width: 978px){
@@ -426,8 +430,8 @@ header#header.header-2 .nav-container{z-index: 999;}
         width: 84%!important;
     }
     .cart .btn-proceed-checkout span {
-        height: 35px!important;
-        line-height: 35px!important;
+        /*height: 35px!important;
+        line-height: 35px!important;*/
     }
 
 	.nav-wide ul.level0 li.level1 > a{text-align:left;}
@@ -484,14 +488,14 @@ header#header.header-2 .nav-container{z-index: 999;}
     button.international {
         width: 75%!important;
         background-size: 100%;
-        height: 40px!important;
+        height: 50px!important;
     }
     .cart .btn-proceed-checkout span {
-        height: 35px!important;
-        line-height: 35px!important;
+        /*height: 35px!important;
+        line-height: 35px!important;*/
     }
-    .cart .totals button.button {
-        width: 74%!important;
+    .cart .totals button.button, .cart .checkout-types button.button, .cart .paypal-logo img{
+        width: 75%!important;
     }		
     	
     .nav-wide ul.level0 li.level1 > a{text-align:left;}
@@ -738,13 +742,13 @@ header#header.header-2 .nav-container {
 }
 p.contact_header{font-size:11px;}
 
-.cart .totals button.button {
-    width: 84%!important;
+.cart .totals button.button, .cart .checkout-types button.button, .cart .paypal-logo img {
+    width: 81%!important;
 }
 button.international {
     width: 81%!important;
     background-size: 100%;
-    height: 40px!important;
+    /*height: 40px!important;*/
 }	
 }
 @media only screen and (max-width: 431px){
@@ -763,8 +767,8 @@ button.international {
 @media only screen and (max-width: 400px){
 	header#header.header-2 .top-cart{top:-135px;}
 	header#header.header-2 .menu-button{top:-140px;}
-	.cart .totals button.button {
-    width: 95%!important;
+	.cart .totals button.button, .cart .checkout-types button.button, .cart .paypal-logo img {
+    width: 92%!important;
 }
 button.international{width: 92%!important;}
 }
@@ -774,8 +778,8 @@ button.international{width: 92%!important;}
 }
 }
 @media only screen and (max-width: 374px){
-.cart .totals button.button {
-    width: 100%!important;
+.cart .totals button.button, .cart .checkout-types button.button, .cart .paypal-logo img {
+    width: 96%!important;
 }
 button.international {
     width: 96%!important;
@@ -803,8 +807,8 @@ nav.nav-container.mobile{width: 100%!important;}
 #header	.searchautocomplete .nav {
     width: 81.7%;
 }
-.cart .totals button.button{width: 100%!important;padding:0!important;}
-button.international{height:35px!important;width: 100%!important;}
+.cart .totals button.button{/*width: 100%!important;padding:0!important;*/}
+button.international{height: 40px!important;}
 
 }
 @media only screen and (max-width: 320px){
@@ -906,7 +910,7 @@ button.international{height:35px!important;width: 100%!important;}
         max-width: 480px;
     }
 }
-@media only screen and (min-width: 1024px){
+@media only screen and (min-width: 1025px){
     .needhelp-tablet{display: none;}
     .usp-wrapper {
         margin-top: 15px;
@@ -934,4 +938,50 @@ button.international{height:35px!important;width: 100%!important;}
 
 .gift-card .form-control {
     width: 300%;
+}
+
+/*cart page*/
+.cart.cart-2 .btn-proceed-checkout span{height: 80px;}
+.cart.cart-2 .btn-proceed-checkout span span{    
+    font-family: "MyriadPro-Bold" !important;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 19px;
+    line-height: 82px;
+}
+.block-usp-wrap{padding-top: 15px;}
+.cart .amazon-pay-button{margin: 0 !important;}
+.cart .btn-proceed-checkout > span{border: none;}
+button.international{background-color: white;}
+@media only screen and (min-width: 1279px){
+    .cart .btn-proceed-checkout span{background-position: 7%;}   
+}
+@media only screen and (min-width: 1025px) and (max-width: 1278px){
+    .cart .btn-proceed-checkout span{background-position: 0%;} 
+    .cart.cart-2 .btn-proceed-checkout span span{
+        font-size: 15px;
+    }  
+}
+@media only screen and (max-width: 1024px) and (min-width: 978px){
+    .cart.cart-2 .discount .discount-form{max-width: 440px;}
+}
+@media only screen and (min-width: 768px) and (max-width: 1024px){
+    .cart .grid_9{margin: 0 0 1.5em;width: 100%;}
+    .main-container .cart.cart-2 .congift-wrap{width: 50%;}
+    .main-container .cart.cart-2 .totals-main{width: 50%;float: right;margin: 0;}
+    table.table-cogift{width: 100%;}
+    body .cart.cart-2 aside section{margin-left: 10px;}
+    .cart.cart-2 .totals button.button{width: 64%;}
+    button.international{width: 64% !important;}
+    .cart.cart-2 aside section{float: left;}
+    .cart.cart-2 aside section.block-colright{width: 94%;}
+    body .cart.cart-2 .discount .input-box input, body .cart.cart-2 .shipping .form-list input{width: 98%;}
+}
+@media only screen and (max-width: 767px){
+    #icForm button{border: 1px solid grey !important;}
+    .cart.cart-2 aside section.totals{float: left;width: 100%;padding: 0;}
+    .checkout-cart-index .cart.cart-2 aside section.totals header{margin: 0 0 1.5em;}
+    table.cart-table td.information{position: relative;}
+    .cart .totals button.button, .cart .checkout-types button.button{padding: 0 !important;}
+    .cart .btn-proceed-checkout span{line-height: 55px;}
 }

@@ -186,3 +186,20 @@
     
     <div class="clear"></div>
 </div>
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+        var myVar = setInterval(function(){ 
+            if (jQuery('.top-checkout .amazon-pay-button img').length ){
+                jQuery('.top-checkout .amazon-pay-button img').clone().appendTo('.totals-main .amazon-pay-button');
+                jQuery('.totals-main .amazon-pay-button img').click(function(){
+                    jQuery('.top-checkout .amazon-pay-button img').click();
+                });
+                myStopFunction();
+            }
+        }, 1000);
+
+        function myStopFunction() {
+            clearInterval(myVar);
+        }
+    });
+</script>
