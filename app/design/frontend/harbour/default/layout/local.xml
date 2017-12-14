@@ -624,7 +624,11 @@
 			<label>Payment Methods After Checkout Button</label>
 			<block type="checkout/onepage_link" name="checkout.cart.methods.onepage" template="checkout/onepage/link.phtml"/>
 			<block type="checkout/multishipping_link" name="checkout.cart.methods.multishipping" template="checkout/multishipping/link.phtml"/>
-			<block type="internationalcheckout/international" name="internationalcheckout.international" template="internationalcheckout/ic_button_on_cart.phtml"/>
+			<block type="paypal/express_shortcut" name="checkout.cart.methods.paypal_express.bottom" after='-' template="paypal/express/shortcut.phtml">
+				<action method="setIsQuoteAllowed"><value>1</value></action>
+			</block>
+			<block type="amazon_payments/button" after='-' name="AmazonPayButtonMethod" template="amazon_payments/button.phtml"/>
+			<block type="internationalcheckout/international" name="internationalcheckout.international" after='-' template="internationalcheckout/ic_button_on_cart.phtml"/>
 		</block>
 		<block type="checkout/cart_coupon" name="checkout.cart.coupon" as="coupon" template="checkout/cart/coupon.phtml"/>
 		<block type="checkout/cart_shipping" name="checkout.cart.shipping" as="shipping" template="checkout/cart/shipping.phtml"/>
@@ -632,15 +636,11 @@
 		<block type="checkout/cart_totals" name="checkout.cart.totals" as="totals" template="checkout/cart/totals.phtml"/>
 		<block type="checkout/cart_crosssell" name="checkout.cart.crosssell.big" as="crosssell_big" template="checkout/cart/crosssell_big.phtml"/>
 		<reference name="checkout.cart.top_methods">
-			<block type="paypal/express_shortcut" name="checkout.cart.methods.paypal_express.top" before="-" template="paypal/express/shortcut.phtml">
+			<block type="paypal/express_shortcut" name="checkout.cart.methods.paypal_express.top" after="-" template="paypal/express/shortcut.phtml">
 				<action method="setIsQuoteAllowed"><value>1</value></action>
 			</block>
-		</reference>
-		<reference name="checkout.cart.methods">
-			<block type="paypal/express_shortcut" name="checkout.cart.methods.paypal_express.bottom" before="-" template="paypal/express/shortcut.phtml">
-				<action method="setIsQuoteAllowed"><value>1</value></action>
-			</block>
-			<block type="amazon_payments/button" before="-" name="AmazonPayButtonMethod" template="amazon_payments/button.phtml"/>
+			<block type="amazon_payments/button" after='-' name="AmazonPayButtonMethod" template="amazon_payments/button.phtml"/>
+			<block type="internationalcheckout/international" name="internationalcheckout.international" after='-' template="internationalcheckout/ic_button_on_cart.phtml"/>
 		</reference>
     </reference>
 </checkout_cart_index>
