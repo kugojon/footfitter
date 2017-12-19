@@ -1,20 +1,11 @@
 <?php
 /**
  * @author Amasty Team
- * @copyright Copyright (c) 2015 Amasty (https://www.amasty.com)
+ * @copyright Copyright (c) 2017 Amasty (https://www.amasty.com)
  * @package Amasty_Xnotif
- */  
+ */
 
-if(class_exists("Mage_ProductAlert_Model_Resource_Stock_Customer_Collection"))
-{
-	class Amasty_Xnotif_Model_Resource_Stock_Customer_Collection_Pure extends Mage_ProductAlert_Model_Resource_Stock_Customer_Collection{}
-}
-else 
-{
-	class Amasty_Xnotif_Model_Resource_Stock_Customer_Collection_Pure extends Mage_ProductAlert_Model_Mysql4_Stock_Customer_Collection{}
-}
-
-class Amasty_Xnotif_Model_Resource_Stock_Customer_Collection extends Amasty_Xnotif_Model_Resource_Stock_Customer_Collection_Pure  
+class Amasty_Xnotif_Model_Resource_Stock_Customer_Collection extends Amasty_Xnotif_Model_Resource_Stock_Customer_Collection_Pure
 { 
     public function join($productId, $websiteId)
     {

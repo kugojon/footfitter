@@ -98,10 +98,18 @@ StockStatus.prototype =
                 if ('undefined' != typeof(this.options[keyCheck]) && this.options[keyCheck])
                 {
                     var status = this.options[keyCheck]['custom_status'];
-                    if (this.options[keyCheck] && status)
+                    if (status)
                     {
+                        status     = status.replace(/<(?:.|\n)*?>/gm, ''); // replace html tags
                         if (!strpos(settings[i].options[x].text, status))
                         {
+                            if('undefined' != typeof(Product.ConfigurableSwatches)){
+                                var text = settings[i].options[x].text;
+                                if(text.indexOf('(') > 0){
+                                    text = text.substring(0, text.indexOf('('));
+                                    settings[i].options[x].text = text;
+                                }
+                            }
                             settings[i].options[x].text = settings[i].options[x].text + ' (' + status + ')';
                         }
                     }
@@ -174,6 +182,16 @@ StockStatus.prototype =
     * rewrite methods from /js/varien/configurable.js
     */
     _rewritePrototypeFunction : function(){
+        /*Amasty Preorder*/
+        if(typeof PreorderNoteConfigurable != 'undefined') {
+            PreorderNoteConfigurable.prototype.enable = function(){
+                return;
+            }
+            PreorderNoteConfigurable.prototype.disable = function(){
+                return;
+            }
+        }
+
         Product.Config.prototype.amOrig_configure = Product.Config.prototype.configure;
         Product.Config.prototype.configure = function(event){
             this.amOrig_configure(event);
@@ -303,45 +321,4 @@ function strpos (haystack, needle, offset)
 {
     var i = (haystack+'').indexOf(needle, (offset ? offset : 0));
     return i === -1 ? false : i;
-}
-
-//Out Of stock notification
-function send_alert_email(url, button)
-{
-    var f = document.createElement('form');
-    var productId = button.id.replace(/\D+/g,"");
-    var block = button.up('.amxnotif-block');
-    if($('amxnotif_guest_email-' + productId)){
-        $('amxnotif_guest_email-' + productId).addClassName("validate-email required-entry");
-    }
-    if(block) {
-        block.childElements().each(function (child) {
-            f.appendChild( Element.clone(child));
-        });
-    }
-
-    var validator = new Validation(block);
-    if (validator.validate()) {
-        f.action = url;
-        f.hide();
-        $$('body')[0].appendChild(f);
-        f.setAttribute("method", 'post');
-        f.id = 'am_product_addtocart_form';
-        f.submit();
-        button.remove();
-        return true;
-    }
-    if($('amxnotif_guest_email-' + productId)){
-        $('amxnotif_guest_email-' + productId).removeClassName("validate-email required-entry");
-    }
-    return false;
-}
-
-function checkIt(evt,url, button) {
-    evt = (evt) ? evt : window.event;
-    var charCode = (evt.which) ? evt.which : evt.keyCode;
-    if (charCode == 13) {
-        return send_alert_email(url, button);
-    }
-    return true;
 }

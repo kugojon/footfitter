@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Amasty Team
- * @copyright Copyright (c) 2015 Amasty (https://www.amasty.com)
+ * @copyright Copyright (c) 2017 Amasty (https://www.amasty.com)
  * @package Amasty_Xnotif
  */
 class Amasty_Xnotif_Model_Mysql4_Alert_Collection extends Mage_Core_Model_Resource_Db_Collection_Abstract
