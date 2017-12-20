@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Amasty Team
- * @copyright Copyright (c) 2015 Amasty (https://www.amasty.com)
+ * @copyright Copyright (c) 2017 Amasty (https://www.amasty.com)
  * @package Amasty_Xnotif
  */
 class Amasty_Xnotif_Model_Catalog_Product_Type_Configurable extends Mage_Catalog_Model_Product_Type_Configurable

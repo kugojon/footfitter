@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Amasty Team
- * @copyright Copyright (c) 2015 Amasty (https://www.amasty.com)
+ * @copyright Copyright (c) 2017 Amasty (https://www.amasty.com)
  * @package Amasty_Xnotif
  */
 class Amasty_Xnotif_Block_Adminhtml_Stock_Grid extends Mage_Adminhtml_Block_Widget_Grid
@@ -104,6 +104,9 @@ class Amasty_Xnotif_Block_Adminhtml_Stock_Grid extends Mage_Adminhtml_Block_Widg
             'width'     => '150px'
         ));
 
+
+        $this->addExportType('*/*/exportAlertsCsv', Mage::helper('customer')->__('CSV'));
+        $this->addExportType('*/*/exportAlertsXml', Mage::helper('customer')->__('Excel XML'));
         return parent::_prepareColumns();
     }
 
