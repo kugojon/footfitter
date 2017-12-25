@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Bss_CronAlertProduct>
+      <version>0.1.0</version>
+    </Bss_CronAlertProduct>
+  </modules>
+  <global>
+    <helpers>
+      <cronalertproduct>
+        <class>Bss_CronAlertProduct_Helper</class>
+      </cronalertproduct>
+    </helpers>
+	<models>
+	  <cronalertproduct>
+		<class>Bss_CronAlertProduct_Model</class>
+		<resourceModel>cronalertproduct_mysql4</resourceModel>
+	  </cronalertproduct>
+			<adminhtml>
+				<rewrite>
+					<system_config_source_cron_frequency>Bss_CronAlertProduct_Model_Adminhtml_System_Config_Source_Cron_Frequency</system_config_source_cron_frequency>
+				</rewrite>
+			</adminhtml>
+			<adminhtml>
+				<rewrite>
+					<system_config_backend_product_alert_cron>Bss_CronAlertProduct_Model_Adminhtml_System_Config_Backend_Product_Alert_Cron</system_config_backend_product_alert_cron>
+				</rewrite>
+			</adminhtml>
+	</models>
+  </global>
+</config> 
