@@ -202,4 +202,34 @@
             clearInterval(myVar);
         }
     });
+
+    var w = jQuery(window).width();
+    var clone = jQuery('.omega.totals-main').clone();
+    jQuery('.omega.totals-main').remove();
+    if ( w > 768 ){
+        clone.insertBefore('.alpha.congift-wrap');
+    }else{
+        clone.insertAfter('.alpha.congift-wrap');
+    }
+
+    jQuery(window).resize(function() {
+        var w = jQuery(window).width();
+        var clone = jQuery('.omega.totals-main').clone();
+        jQuery('.omega.totals-main').remove();
+        if ( w > 768 ){
+            clone.insertBefore('.alpha.congift-wrap');
+        }else{
+            clone.insertAfter('.alpha.congift-wrap');
+        }
+        var myVar = setInterval(function(){ 
+            jQuery('.totals-main .amazon-pay-button img').click(function(){
+                jQuery('.top-checkout .amazon-pay-button img').click();
+            });
+            myStopFunction();
+        }, 1000);
+
+        function myStopFunction() {
+            clearInterval(myVar);
+        }
+    });
 </script>
