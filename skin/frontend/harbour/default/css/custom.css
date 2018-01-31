@@ -985,4 +985,5 @@ button.international{background-color: white;}
     .cart .totals button.button, .cart .checkout-types button.button{padding: 0 !important;}
     .cart .btn-proceed-checkout span{line-height: 55px;}
     .cart .gift-card .form-control{width: 98%;}
+    .reward-mess{display: none;}
 }
