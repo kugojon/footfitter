@@ -987,3 +987,6 @@ button.international{background-color: white;}
     .cart .gift-card .form-control{width: 98%;}
     .reward-mess{display: none;}
 }
+.mess-country{font-style: italic;}
+.mess-country a{color: #53a548;}
+.mess-country span{font-weight: bold;color: #938a8d;}
