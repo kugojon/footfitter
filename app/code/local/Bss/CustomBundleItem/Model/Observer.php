@@ -4,6 +4,9 @@ class Bss_CustomBundleItem_Model_Observer
   public function saveBundleOption(Varien_Event_Observer $observer)
   {
     $data = Mage::app()->getRequest()->getParam('bundle_options');
+    if(!$data){
+    	return;
+    }
     $product = $observer->getEvent()->getProduct();
     $store_id = (int)$product->getData('store_id');
 
