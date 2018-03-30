@@ -3,6 +3,9 @@
 * Feel free to add your own css rules here!
 *
 */
+input.qty, #confirmButtons .am-btn-left .timer {
+    float: none;
+}
 @font-face {
     font-family: TrebuchetMS;
     src: url('../fonts/TrebuchetMS.ttf');
