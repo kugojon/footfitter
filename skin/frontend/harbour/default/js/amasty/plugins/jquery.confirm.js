@@ -90,6 +90,14 @@ document.observe("dom:loaded", function () {
                 related.appendTo(confirmBox);
             }
 
+            if (params.upsell) {
+                var upsell = document.createElement('div');
+                upsell = $(upsell); // fix for IE
+                upsell.attr('class', 'amcart-upsell-block');
+                upsell.html(params.upsell);
+                upsell.appendTo(confirmBox);
+            }
+
             confirmOverlay.hide().appendTo($('body', window.parent.document));
 
             confirmOverlay.fadeIn();

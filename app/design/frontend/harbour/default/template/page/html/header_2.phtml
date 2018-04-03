@@ -230,13 +230,17 @@
 	    }
 	    jQuery("#nav-cover").css({'height': coverHeight+'px', 'top': headerHeight+'px'});
 	});
-	jQuery(".nav-wide li.level-top.parent, header.header .top-cart .block-title").mouseover(function() {
-	   jQuery("#nav-cover").css('display', 'block');
-	});
+    jQuery('.nav-wide li.level-top.parent, header.header .top-cart .block-title').live('mouseover',function() {
+        jQuery("#nav-cover").css('display', 'block');
+    });
 
-	jQuery(".nav-wide li.level-top.parent, header.header .top-cart .block-title").mouseout(function() {
-	  jQuery("#nav-cover").css('display', 'none');
-	});
+    jQuery('.nav-wide li.level-top.parent').on('mouseout',function() {
+        jQuery("#nav-cover").css('display', 'none');
+    });
+
+    jQuery('header.header .top-cart .block-title').on('mouseout',function() {
+        jQuery("#nav-cover").css('display', 'none');
+    });
 
 	jQuery(".mobile-free-close").click(function (){
 		jQuery(".mobile-active").css("display","none");

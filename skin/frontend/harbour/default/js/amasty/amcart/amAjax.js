@@ -47,6 +47,11 @@ AmAjax.prototype =
                             wrapperMinicart[0].outerHTML = response;
                         }
 
+                        topCart('hover');
+                        jQuery('header.header .top-cart .block-title').on('mouseout',function() {
+                            jQuery("#nav-cover").css('display', 'none');
+                        });
+                        AmAjaxShoppCartLoad('.amcart-related-block button.add-tocart, .amcart-upsell-block button.add-tocart');
                         if (AmAjaxObj.enMinicart === "1") {
                             AmAjaxObj.createMinicart()
                         }
@@ -253,7 +258,7 @@ AmAjax.prototype =
 
     sendAjax : function(idProduct, param, oldEvent, element) {
         if (idProduct) {
-            var postData = 'product=' + idProduct;
+            var postData = 'product_id=' + idProduct;
             if (jQuery('#amconf-block-' + idProduct).length) {
                 var validator = new Validation($('amconf-block-' + idProduct));
                 if (validator.validate()) {
@@ -305,6 +310,7 @@ AmAjax.prototype =
                                     'title'      : response.title,
                                     'message'    : response.message,
                                     'related'    : response.related,
+                                    'upsell'    : response.upsell,
                                     'buttons'    : {
                                         '1'    : {
                                             'name'  :  response.b1_name,
