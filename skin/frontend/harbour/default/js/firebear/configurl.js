@@ -64,6 +64,7 @@ $jq(document).ready(function(){
             attributeId = attrId;
         });
         //intergrate with Amasty xnotify
+        if(typeof spConfig.values !== 'undefined'){
         stStatus._reloadContent(spConfig.values[attributeId]);
         var allowedProducts = {};
         jQuery.each(values, function(key, value){
@@ -112,6 +113,7 @@ $jq(document).ready(function(){
                 });
             }
         });
+        }
         // add intergrate for amasty xnotify module.
 
 

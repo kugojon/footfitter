@@ -1041,6 +1041,9 @@ div#confirmBox, .am-upsell-title > .am-title {background-color: #ffffff}
     float: none;
     margin: 0 auto 1.123em;
 }
+.amcart-options form dd {padding: 5px 0}
+.amcart-options form p.availability.in-stock {padding-top: 0; padding-bottom: 10px; display: block;}
+.amcart-options form p.availability.in-stock i{margin-top: 0;}
 @media (max-width: 566px) {
     .amcart-upsell-block .product-image > img {width: 100%; height: auto;}
     #confirmBox .amcart-upsell-block .product-name a {width: auto;}
