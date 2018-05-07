@@ -1,0 +1,768 @@
+<script type="text/javascript">
+	if (typeof jQuery == "undefined"){
+		document.write(unescape("%3Cscript src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E"));
+	}
+</script>
+<script src="<?php echo Mage::getBaseUrl('js').'chatsystem/js/jquery.tmpl.min.js'?>" type="text/javascript"></script>
+<script src="<?php echo Mage::getBaseUrl('js').'chatsystem/js/socket.io.js'?>" type="text/javascript"></script>
+<script id="conversationTemplate" type="text/x-jquery-tmpl">
+	{{if isAdmin}}
+		<div class="wk-cs-chat">
+			<span class="wk-cs-chat-content">
+				<span class="wk-cs-inner"><span>{{html message}}</span>
+					<span class="wk-cs-chat-myname">${created_at}</span>
+				</span>
+			</span>
+			<div title=${from} class="wk-cs-chat-ref">
+				<img src=${image} height='40px' width='40px'/>
+			</div>
+		</div>
+	{{else}}
+		<div class="wk-cs-chat">
+			<div class='wk-cs-chat-user'>
+				<div title=${from} class="wk-cs-chat-ref-user"></div>
+				<span class="wk-cs-chat-content-user">
+					<span class="wk-cs-inner-user">
+						<span>{{html message}}</span>
+						<span class="wk-cs-chat-myname">${created_at}</span>
+					</span>
+				</span>
+			</div>
+		</div>
+	{{/if}}
+</script>
+<?php
+// require_once Mage::getBaseDir('lib').DS.'chatsystem'.DS.'Initialize.php';
+	$user = Mage::getSingleton("admin/session");
+	$helper = Mage::helper('chatsystem');
+   	$adminsession = Mage::getSingleton("admin/session", array("name"=>"adminhtml"));
+	$timeToUpdate = $helper->getTimeToUpdate()*1000;
+?>
+<?php if($adminsession->isLoggedIn()):
+		$agentName = $user->getUser()->getFirstname()." ".$user->getUser()->getLastname();
+		$agentId = $user->getUser()->getUserId();
+		$agent = $this->isAgent($agentId);
+		$assignedId = array();
+		$assignedId = $this->getAssignedcustomer($agentId);
+			?>
+		<div id="wk-cs-buddy-list-container">
+			<div id="wk-cs-buddy-list-opener">
+				<span id="wk-cs-buddy-list-opener-icon"></span>
+			</div>
+			<div id="wk-admin-status-div">
+				<select id="wk-admin-status">
+					<option>Status</option>
+					<option value="1">Online</option>
+					<option value="2">Busy</option>
+					<option value="0">Offline</option>
+				</select>
+				<h3>
+					<?php $agent_status = $this->getAgentStatus($agentId);
+						if($agent_status == 0) {
+							echo  "Offline";
+						} elseif($agent_status == 1) {
+							echo "Online";
+						} elseif($agent_status == 2) {
+							echo "Busy";
+						}
+					 ?>
+				</h3>
+			</div>
+			<div id="wk-cs-buddy-list">
+				<?php
+					$fromNameArray = array();
+					$conversationCollection = Mage::getModel('chatsystem/conversation')
+								->getCollection()
+								->addFieldToSelect("fromname")
+								->addFieldToSelect("forid")
+								->addFieldToFilter("forid",array('in'=>$assignedId))
+								->addFieldToFilter('to_type',Array('neq'=>'Customer'))
+								->setOrder('id','DESC');
+
+					$customerCollection = Mage::getModel('customer/customer')
+								->getCollection()
+								->addAttributeToSelect('*');
+
+				?>
+				<div id="wk-cs-buddy-list-movable" style="height:<?php echo 26*sizeof($customerCollection); ?>px">
+					<?php foreach ($conversationCollection as $customerConversation): ?>
+						<?php if(!in_array($customerConversation->getForid(), $fromNameArray)): ?>
+							<?php $customer = Mage::getModel("customer/customer")->load($customerConversation->getForid()); ?>
+							<?php $sessionArray=Mage::getModel('admin/session')->getData($customerConversation->getForid()); ?>
+							<div id='list-<?php echo $customer->getId(); ?>' class='wk-cs-chat-buddies' value='<?php echo $sessionArray; ?>'>
+								<span class='wk-cs-buddy-icon'></span>
+								<span class='wk-cs-buddy-name'>
+									<?php echo $customer->getFirstname()." ".$customer->getLastname() ?>
+								</span>
+							</div>
+							<?php $fromNameArray[] = $customerConversation->getForid(); ?>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</div>
+			</div>
+			<div class="wk-search-box">
+				<input type="text" class="wk-cs-searchBox" id="wk-cs-searchBox" placeholder="search here...">
+			</div>
+		</div>
+		<audio id="wk-cs-chat-notify">
+			<source src="<?php echo Mage::getBaseUrl('js').'chatsystem/notify.ogg'; ?>" type="audio/ogg">
+		</audio>
+		<link href="<?php echo Mage::getBaseUrl('js').'chatsystem/css/cs_admin.css'; ?>" rel="stylesheet" type="text/css" />
+		<script>
+			var $wk_jq = jQuery.noConflict();
+			var chatWindow = new Array();
+			var countArray = new Array();
+			var flag = 0
+			var Zindex = 1000;
+			var space = 0;
+			var i = 0;
+			var right = 25;
+			var openFirstTime = true;
+			var conversationLimit = 10;
+			var blinkTitle = $wk_jq("title").text();
+			var currentTitle = $wk_jq("title").text();
+			var windowWidth = $wk_jq(window).width();
+			var chat_window_more_than_window_width = false;
+			var agent;
+			function SoundAlert(){
+				$wk_jq("#wk-cs-chat-notify")[0].play();
+			}
+			var attachment_img = '<label for="wk-file-input"><img src="<?php echo Mage::getBaseUrl('js').'chatsystem/images/attachment.png'?>"/></label><input id="wk-file-input" type="file"/>';
+
+			var host = "<?php echo Mage::getStoreConfig("chatsystem/chatsystem/host"); ?>";
+			var port = "<?php echo Mage::getStoreConfig("chatsystem/chatsystem/port"); ?>";
+			var socket = io(host + ':' + port);
+
+			//Click on list icon and it slides rigth
+
+			$wk_jq("#wk-cs-buddy-list-opener").click(function(){
+				if($wk_jq("#wk-cs-buddy-list-container").css("left") != "-255px"){
+					$wk_jq("#wk-cs-buddy-list-container").animate({"left":"-255px"});
+				}else{
+					$wk_jq("#wk-cs-buddy-list-container").animate({"left":"0"});
+				}
+			});
+
+			$wk_jq(document).ready(function(){
+				var cont = "";
+				agent=<?php echo json_encode($agent);?>;
+				CheckIfNewMessageThere();
+				// socket newUserConneted
+				var newUserConnectData = {
+					sender: 'admin',
+					adminId: <?php echo $agentId;?>,
+				}
+				socket.emit('newUserConneted',newUserConnectData);
+
+				// socket customerMessage
+				socket.on('customerMessage', function (details) {
+			        CheckIfNewMessageThere();
+			    });
+
+				//  socket refreshAdminChatList
+				socket.on('refreshAdminChatList', function (details) {
+			        CheckIfNewMessageThere();
+					var flag = 1;
+					$wk_jq('.wk-cs-chat-buddies').each(function(){
+						var id = $wk_jq(this).attr('id');
+						var res = id.split("-");
+						if(res[1] == details.customerId) {
+							flag = 0;
+						}
+					});
+					if(flag) {
+						cont = "<div id='list-"+details.customerId+"' class='wk-cs-chat-buddies'><span class='wk-cs-buddy-icon'></span><span class='wk-cs-buddy-name'>"+details.customerName+"</span></div>";
+						$wk_jq('#wk-cs-buddy-list-movable').append(cont);
+					}
+			    });
+
+				//  socket adminStatusChanged
+				$wk_jq(".link-logout").on("click",function(){
+					socket.emit("adminStatusChanged","1");
+				});
+
+				$wk_jq("#wk-cs-searchBox").on('keyup', function(e) {
+					var keyCode = e.keyCode || e.which;
+					$wk_jq('.wk-cs-chat-buddies').addClass("wk-cs-none")
+					$wk_jq('.wk-cs-chat-buddies').each(function(){
+						var term = $wk_jq(".wk-cs-searchBox").val();
+						term = $wk_jq.trim(term);
+						term = term.toLowerCase();
+						var tempName = $wk_jq(this).find(".wk-cs-buddy-name").text();
+						tempName = $wk_jq.trim(tempName);
+						tempName = tempName.toLowerCase();
+						if(tempName.indexOf(term)>-1){
+							$wk_jq(this).removeClass("wk-cs-none");
+							$wk_jq(this).addClass("wk-cs-block");
+						}
+					});
+				});
+
+				//List tab slides left if escape key pressed
+
+				$wk_jq("body").on('keyup', function(e) {
+					var keyCode = e.keyCode || e.which;
+					if(keyCode == 27){
+						$wk_jq("#wk-cs-buddy-list-container").animate({"left":"-255px"});
+					}
+				});
+
+				//calls when there is customer whose windows are open
+
+				$wk_jq('.wk-cs-chat-buddies').each(function(){
+					if(right>810){
+						right=25;
+					}
+					var customerid=$wk_jq(this).attr('value');
+					var name=$wk_jq(this).find('.wk-cs-buddy-name').text();
+					if(customerid != ''){
+						var content = 	'<div style="right:'+right+'px" class="wk-cs-chatwindow" id="'+
+										customerid+'" onclick="changeWindowColor(this);">'+
+										'<span class="wk-cs-fetch-content-limit" id="false">10</span>'+
+										'<div class="wk-cs-chat-top wk-cs-bg-grey">'+
+											'<div class="wk-cs-status wk-cs-status-on"></div>'+
+											'<div class="wk-cs-user-name">'+name+'</div>'+
+											'<div class="wk-cs-chat-btn wk-cs-cls" onclick="closeWindow(this);"><span class="wk-cs-close"></span></div>'+
+											'<div class="wk-cs-chat-btn wk-cs-sh"><span class="wk-cs-show"></span></div>'+
+											'</div>'+
+											'<div class="wk-cs-chat-container wk-cs-none">'+
+												'<div onscroll="PleaseFetchMore(this);" class="wk-cs-chat-list-small">'+
+													'<div class="wk-cs-loader-container">'+
+														'<span class="wk-cs-loader" style="display:block;"></span>'+
+													'</div>'+
+													'<div class="wk-cs-chat-moveable-list"></div>'+
+												'</div>'+
+												'<div class="wk-cs-enter-text-container-small">'+
+													'<label for="wk-file-input-'+customerid+'"><img src="<?php echo Mage::getBaseUrl('js').'chatsystem/images/attachment.png'?>"/></label><input id="wk-file-input-'+customerid+'" type="file"/>'+
+													'<textarea class="wk-cs-enter-text-small"  onkeypress="MsgEntered(this,event);"></textarea>'+
+												'</div>'+
+											'</div>'+
+										'</div>';
+						$wk_jq("body").append(content);
+						FetchMsgForAdminFromUsers(customerid);
+						right+=260;
+					}
+				});
+			});
+
+			// socket customerStatusChange
+			socket.on("customerStatusChange", function(data) {
+				if(data.status == 2) {
+					$wk_jq(".wk-cs-status").removeClass("wk-cs-status-on");
+					$wk_jq(".wk-cs-status").removeClass("wk-cs-status-off");
+					$wk_jq(".wk-cs-status").addClass("wk-cs-status-busy");
+
+				} else if (data.status == 1) {
+					$wk_jq(".wk-cs-status").removeClass("wk-cs-status-busy");
+					$wk_jq(".wk-cs-status").removeClass("wk-cs-status-off");
+					$wk_jq(".wk-cs-status").addClass("wk-cs-status-on");
+				} else if (data.status == 0) {
+					$wk_jq(".wk-cs-status").removeClass("wk-cs-status-busy");
+					$wk_jq(".wk-cs-status").removeClass("wk-cs-status-on");
+					$wk_jq(".wk-cs-status").addClass("wk-cs-status-off");
+				}
+
+			});
+
+
+			//calls when click on an customer name in list
+
+			$wk_jq('#wk-cs-buddy-list-movable').on("click",".wk-cs-chat-buddies",function()	{
+				var mainWidth = $wk_jq(window).width();
+				var id = $wk_jq(this).attr("id").split("-")[1];
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/userSession')?>",
+					type: "GET",
+					data:{uid: id}
+				});
+				if(mainWidth - 260 > 260){
+					if(right > 810){
+						right = 25;
+					}
+					var name = $wk_jq(this).find(".wk-cs-buddy-name").text();
+					if(typeof $wk_jq("body").find("#"+id).attr("id") == "undefined"){
+						var content = 	'<div style="right:'+right+'px; " class="wk-cs-chatwindow" id="'+
+											id+'" onclick="changeWindowColor(this);">'+
+										'<span class="wk-cs-fetch-content-limit" id="false">10</span>'+
+										'<div class="wk-cs-chat-top wk-cs-bg-grey">'+
+											'<span class="wk-cs-status wk-cs-status-on"></span>'+
+											'<span class="wk-cs-user-name">'+name+'</span>'+
+											'<span class="wk-cs-chat-btn wk-cs-cls" onclick="closeWindow(this);"><span class="wk-cs-close"></span></span>'+
+											'<span class="wk-cs-chat-btn wk-cs-sh"><span class="wk-cs-show"></span></span>'+
+										'</div>'+
+										'<div class="wk-cs-chat-container wk-cs-none">'+
+											'<div onscroll="PleaseFetchMore(this);" class="wk-cs-chat-list-small">'+
+												'<div class="wk-cs-loader-container">'+
+													'<span class="wk-cs-loader" style="display:block;"></span>'+
+												'</div>'+
+												'<div class="wk-cs-chat-moveable-list"></div>'+
+											'</div>'+
+											'<div class="wk-cs-enter-text-container-small">'+
+												'<label for="wk-file-input-'+id+'"><img src="<?php echo Mage::getBaseUrl('js').'chatsystem/images/attachment.png'?>"/></label><input id="wk-file-input-'+id+'" type="file"/>'+
+												'<textarea class="wk-cs-enter-text-small"  onkeypress="MsgEntered(this,event);"></textarea>'+
+											'</div>'+
+										'</div>'+
+									'</div>';
+						right += 260;
+						$wk_jq("body").append(content);
+						FetchMsgForAdminFromUsers(id);
+					}
+					else{
+						$wk_jq(".wk-cs-chatwindow").css("z-index",0);
+						$wk_jq("body").find("#"+id).css("z-index",Zindex);
+					}
+				}
+			});
+
+			//Calls when click on chat window top
+
+			$wk_jq("body").delegate(".wk-cs-chat-top","click",function(e){
+				if($wk_jq(e.target).attr('class') != 'wk-cs-chat-btn wk-cs-cls'){
+					if("<?php echo $user->getUser()->getName(); ?>".length > 1)	{
+						if($wk_jq(this).next().hasClass("wk-cs-block")) {
+							$wk_jq(this).next(".wk-cs-chat-container").hide();
+							$wk_jq(this).next().removeClass("wk-cs-block");
+							$wk_jq(this).next().addClass("wk-cs-none");
+							$wk_jq(this).find(".wk-cs-sh").find("span").attr("class","wk-cs-show");
+							$wk_jq("body").find(".wk-cs-chatwindow").each(function(){$wk_jq(this).css({"z-index":"0"});});
+							$wk_jq(this).parents(".wk-cs-chatwindow").css({"z-index":"1000"});
+						}
+						else{
+							$wk_jq(this).next(".wk-cs-chat-container").show();
+							$wk_jq(this).find(".wk-cs-sh").find("span").attr("class","wk-cs-hide");
+							$wk_jq(this).parents(".wk-cs-chatwindow").find("textarea").focus();
+							$wk_jq(this).next().removeClass("wk-cs-none");
+							$wk_jq(this).next().addClass("wk-cs-block");
+							$wk_jq("body").find(".wk-cs-chatwindow").each(function(){$wk_jq(this).css({"z-index":"0"});});
+							$wk_jq(this).parents(".wk-cs-chatwindow").css({"z-index":"1000"});
+						}
+					}
+				}
+				$wk_jq(this).next().find(".wk-cs-chat-list-small").scrollTop($wk_jq(this).next().find(".wk-cs-chat-list-small .wk-cs-chat-moveable-list").height());
+			});
+
+			//Calls when click on chatwhindow of any customer to stop notify that message is read now
+
+			$wk_jq("body").delegate(".wk-cs-chatwindow","click",function(e){
+				clearInterval(blinkTitle);
+				var id = $wk_jq(this).attr("id");
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/notifyMsgIsReadnow')?>",
+					type: "GET",
+					data:{userid : id}
+				});
+				$wk_jq(this).find(".wk-cs-chat-top").addClass("wk-cs-bg-grey");
+				$wk_jq("title").text(currentTitle);
+			});
+
+			//calls when there is new message to change color of top of chat window
+
+			function changeWindowColor(thisthis){
+				clearInterval(blinkTitle);
+				var id=$wk_jq(thisthis).attr("id");
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/notifyMsgIsReadnow')?>",
+					type: "GET",
+					data:{userid : id}
+				});
+				$wk_jq(thisthis).find(".wk-cs-chat-top").removeClass("wk-cs-bg-yellow");
+				$wk_jq(thisthis).find(".wk-cs-chat-top").addClass("wk-cs-bg-grey");
+				$wk_jq("title").text(currentTitle);
+				$wk_jq("body").find(".wk-cs-chatwindow").each(function(){$wk_jq(this).css({"z-index":"0"});});
+				$wk_jq(thisthis).css({"z-index":"1000"});
+			}
+
+			//call when click on X button to close window
+
+			function closeWindow(thisthis){
+				var parentId = $wk_jq(thisthis).parent().parent().attr("id");
+				countArray[parentId]="none";
+				var temp = 25;
+				var rightPosition = parseInt($wk_jq(thisthis).parents('.wk-cs-chatwindow').css('right'));
+				$wk_jq(thisthis).parents('.wk-cs-chatwindow').remove();
+				var length = jQuery(".wk-cs-chatwindow").length;
+				length = length%4;
+				if(length==1){
+					right = 285;
+				}else if(length==2){
+					right = 545;
+				}else if(length==3){
+					right = 805;
+				}
+				else {
+					right = 25;
+				}
+				$wk_jq("body").find('.wk-cs-chatwindow').each(function(){
+					if(temp > 805){
+						temp = 25;
+					}
+					$wk_jq(this).css('right',temp);
+					temp += 260;
+				});
+				var id = $wk_jq(thisthis).parents('.wk-cs-chatwindow').attr('id');
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/userSessionUnset')?>",
+					type: "GET",
+					data:{uid: id}
+				});
+			}
+
+			//calls when message entered by agent in chat window to send message to customer
+
+			function MsgEntered(thisthis,e) {
+				$wk_jq(thisthis).parent().parent().prev().addClass("wk-cs-bg-grey");
+				if(e.keyCode == 13 && !e.shiftKey){
+					var content;
+					e.preventDefault();
+					if($wk_jq(thisthis).val().trim() != ""){
+						var msg = $wk_jq(thisthis).val().replace(/\</g,'&lt;').replace(/\>/g,'&gt;').replace(/\n/g,'</br>');
+
+						var isMsghttp = msg.split("http://");
+						var isMsghttps = msg.split("https://");
+						var isMsgwww = msg.split("www");
+						if((isMsghttp[0] == "" && isMsghttp[1].length > 0) || (isMsghttps[0] == "" && isMsghttps[1].length > 0) || (isMsgwww[0] == "" && isMsgwww[1].length > 0))	{
+							if(isMsgwww[0] == "" && isMsgwww[1].length > 0)	{
+								content = 	"<div class='wk-cs-chat'>"+
+												"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><a href='http://"+msg+"' target='_blank'><span>"+msg+"</span></a>"+
+												"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span></span>"+
+												"<div class='wk-cs-chat-ref' title='Admin'>"+
+												"<img src='"+agent['image']+"' height='40px' width='40px'/>"+
+												"</div>"+
+											"</div>";
+							}
+							else{
+								content = 	"<div class='wk-cs-chat'>"+
+												"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><a href='"+msg+"' target='_blank'><span>"+msg+"</span></a>"+
+												"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span></span>"+
+												"<div class='wk-cs-chat-ref' title='Admin'>"+
+												"<img src='"+agent['image']+"' height='40px' width='40px'/>"+
+												"</div>"+
+											"</div>";
+							}
+						}
+						else
+						if(/^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(msg)){
+							content = 	"<div class='wk-cs-chat'>"+
+											"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><a href='mailto:"+msg+"' target='_blank'><span>"+msg+"</span></a>"+
+											"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span></span>"+
+												"<div class='wk-cs-chat-ref' title='Admin'>"+
+												"<img src='"+agent['image']+"' height='40px' width='40px'/>"+
+											"</div>"+
+										"</div>";
+						}
+						else	{
+							content = 	"<div class='wk-cs-chat'>"+
+											"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><span>"+msg+"</span>"+
+											"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span></span>"+
+											"<div class='wk-cs-chat-ref' title='Admin'>"+
+											"<img src='"+agent['image']+"' height='40px' width='40px'/>"+
+											"</div>"+
+										"</div>";
+						}
+						$wk_jq(thisthis).parent().prev().find(".wk-cs-chat-moveable-list").append(content);
+						$wk_jq(thisthis).parent().prev().scrollTop($wk_jq(thisthis).parent().prev().find(".wk-cs-chat-moveable-list").height());
+						$wk_jq(thisthis).val("");
+						$wk_jq.ajax({
+							url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/saveConversation')?>",
+							type: "GET",
+							dataType: 'html',
+							data:{
+									forid	 : $wk_jq(thisthis).parent().parent().parent().attr("id"),
+									message	 : msg,
+									toname   : $wk_jq(thisthis).parent().parent().prev().find(".wk-cs-user-name").text(),
+									agent_name:'<?php echo $agentName;?>',
+									agent_id:<?php echo $agentId;?>
+								}
+						});
+						//  socket newAdminMessageSubmit
+						var newAdminMessageSubmitData = {
+						    receiver: $wk_jq(thisthis).parent().parent().parent().attr("id"),
+						}
+						socket.emit('newAdminMessageSubmit',newAdminMessageSubmitData);
+
+					}
+				}
+				if(e.keyCode == 13 && e.shiftKey)
+					$wk_jq(thisthis).val($wk_jq(thisthis).val());
+			}
+			$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/customerIdWithConversationCount')?>",
+					type: "GET",
+					dataType: 'html',
+					success:function(con){
+						var countArray =$wk_jq.parseJSON(con);
+					}
+			});
+
+			// when attachment icon clicked
+			$wk_jq('body').on('change','[id^="wk-file-input-"]',function(event){
+				attachmentEntered(this,event);
+			});
+			function attachmentEntered(thisthis,event) {
+				var rand = Math.floor((Math.random() * 100000) + 1);
+				var name = event.originalEvent.target.files[0].name;
+				var ext = name.toLowerCase().substr(name.lastIndexOf('.') + 1);
+				var extensions = ["pdf", "png", "jpg", "jpeg", "csv", "gif"];
+				if(extensions.indexOf(ext) == -1) {
+					alert("Invalid Extension");
+					return false;
+				}
+				name = rand+name;
+
+				$wk_jq(thisthis).parent().parent().prev().addClass("wk-cs-bg-grey");
+				var content = "";
+				event.preventDefault();
+
+				var fileType = event.originalEvent.target.files[0].type;
+				if (fileType.indexOf("image") >= 0) {
+					var type = 'image';
+				} else {
+					var type = 'file';
+				}
+
+				if($wk_jq(thisthis).val().trim() != ""){
+					var msg = $wk_jq(thisthis).val().replace(/\</g,'&lt;').replace(/\>/g,'&gt;').replace(/\n/g,'</br>');
+
+							for(var i=0;i<thisthis.files.length;i++){
+				                var reader = new FileReader();
+
+				                reader.onload = function(e) {
+									if(type == 'image'){
+										var tm = "<img class='wk-img' src='"+e.target.result+"'>";
+									} else if(type == 'file') {
+										var tm = name;
+									}
+									content = 	"<div class='wk-cs-chat'>"+
+													"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><span><a href='"+e.target.result+"' target='_blank'>"+tm+"</a></span>"+
+													"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span></span>"+
+													"<div class='wk-cs-chat-ref' title='Admin'>"+
+													"<img src='"+agent['image']+"' height='40px' width='40px'/>"+
+													"</div>"+
+												"</div>";
+									$wk_jq(thisthis).parent().prev().find(".wk-cs-chat-moveable-list").append(content);
+									$wk_jq(thisthis).parent().prev().scrollTop($wk_jq(thisthis).parent().prev().find(".wk-cs-chat-moveable-list").height());
+									$wk_jq(thisthis).val("");
+
+									$wk_jq.ajax({
+										url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/saveConversation')?>",
+										type: "POST",
+										dataType: 'html',
+										data:{
+												form_key : window.FORM_KEY,
+												forid	 : $wk_jq(thisthis).parent().parent().parent().attr("id"),
+												message	 : e.target.result,
+												file_name : name,
+												file_type : type,
+												toname   : $wk_jq(thisthis).parent().parent().prev().find(".wk-cs-user-name").text().trim(),
+												agent_name:'<?php echo $agentName;?>',
+												agent_id:<?php echo $agentId;?>,
+
+											},
+									});
+									// socket newAdminMessageSubmit
+									var newAdminMessageSubmitData = {
+									    receiver: $wk_jq(thisthis).parent().parent().parent().attr("id"),
+									}
+									socket.emit('newAdminMessageSubmit',newAdminMessageSubmitData);
+				                }
+				                reader.readAsDataURL(thisthis.files[i]);
+				            }
+
+
+				}
+			}
+
+			// status change
+
+			$wk_jq("body").on('change','#wk-admin-status',function(){
+				var status = $wk_jq('#wk-admin-status').val();
+				if(status == "") {
+					status = 1;
+				}
+				changeStatus(<?php echo $agentId?>,status);
+			});
+
+			function changeStatus(agent,status) {
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/changeStatus')?>",
+					type: "GET",
+					dataType: 'html',
+					data:{
+						agent_id: agent,
+						status: status,
+					},
+					success: function(){
+						// socket adminStatusChanged
+						socket.emit('adminStatusChanged',"1");
+
+						if(status == 0) {
+							location.reload();
+						}
+						if(status == 1) {
+							$wk_jq.ajax({
+								url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/updateTotalassign')?>",
+								type: "GET",
+								dataType: 'html',
+								data:{
+									agent_id: agent,
+								}
+							});
+							CheckIfNewMessageThere();
+							$wk_jq('#wk-admin-status-div h3').html("Online");
+						}
+						if (status == 2) {
+							$wk_jq('#wk-admin-status-div h3').html("Busy");
+						}
+					}
+				});
+			}
+
+			//Check whether there is new message or not?
+
+			function CheckIfNewMessageThere() {
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/checkIfNewMessageThere')?>",
+					type: "GET",
+					dataType: 'html',
+					data:{agent_id:<?php echo $agentId?>},
+					success:function(nameArray){
+						if(nameArray){
+							var usersArray = nameArray.replace(/(,$)/g,"").split(",");
+							for(var i = 0;i < usersArray.length; i++){
+								var dataarrayofonecustomer = usersArray[i].split("-");
+								var name = dataarrayofonecustomer[0];
+								var id = dataarrayofonecustomer[1];
+								var thisthis=$wk_jq("body").find("#"+id);
+								if(right>805){
+									right=25;
+								}
+								if(typeof $wk_jq("body").find("#"+id).attr("id") == "undefined"){
+									var content = 	'<div style="right:'+right+'px" class="wk-cs-chatwindow" id="'+id+'" onclick="changeWindowColor(this);">'+
+												'<span class="wk-cs-fetch-content-limit" id="false">10</span>'+
+												'<div class="wk-cs-chat-top wk-cs-bg-grey">'+
+													'<div class="wk-cs-status wk-cs-status-on"></div>'+
+													'<div class="wk-cs-user-name">'+name+'</div>'+
+													'<div class="wk-cs-chat-btn wk-cs-cls" onclick="closeWindow(this);"><span class="wk-cs-close"></span></div>'+
+													'<div class="wk-cs-chat-btn wk-cs-sh"><span class="wk-cs-show"></span></div>'+
+												'</div>'+
+												'<div class="wk-cs-chat-container wk-cs-none">'+
+													'<div onscroll="PleaseFetchMore(this);" class="wk-cs-chat-list-small">'+
+														'<div class="wk-cs-loader-container">'+
+															'<span class="wk-cs-loader" style="display:block;"></span>'+
+														'</div>'+
+														'<div class="wk-cs-chat-moveable-list"></div>'+
+													'</div>'+
+													'<div class="wk-cs-enter-text-container-small">'+
+														'<label for="wk-file-input-'+id+'"><img src="<?php echo Mage::getBaseUrl('js').'chatsystem/images/attachment.png'?>"/></label><input id="wk-file-input-'+id+'" type="file"/>'+
+														'<textarea class="wk-cs-enter-text-small" onkeypress="MsgEntered(this,event);"></textarea>'+
+													'</div>'+
+												'</div>'+
+												'</div>';
+									right+=260;
+									$wk_jq("body").append(content);
+									FetchMsgForAdminFromUsers(id);
+								}
+								else{
+									var currthis = $wk_jq("body").find("#"+id);
+									var currcss= $wk_jq(currthis).css("right");
+									$wk_jq(".wk-cs-chatwindow").css("z-index",0);
+									$wk_jq("body").find("#"+id).css("z-index",Zindex);
+									FetchMsgForAdminFromUsers(id);
+									$wk_jq('.wk-cs-chatwindow').each(function(){
+										var thisId = $wk_jq(this).attr("id");
+										var thisCss = $wk_jq(this).css("right");
+										if(thisId!=id){
+											if(currcss==thisCss){
+												$wk_jq(this).find(".wk-cs-chat-container").removeClass("wk-cs-block");
+												$wk_jq(this).find(".wk-cs-chat-container").addclass("wk-cs-none");
+											}
+										}
+									});
+								}
+							}
+						}
+						// setTimeout(function(){
+						// 	CheckIfNewMessageThere();
+						// },<?php echo $timeToUpdate?>);
+					}
+				});
+			}
+
+			//If there is new mesage then if fetches the messages from the database
+
+			function FetchMsgForAdminFromUsers(id,scrollToTop)	{
+				var thisthis = $wk_jq("body").find("#"+id);
+				var conversationLimit = thisthis.find(".wk-cs-fetch-content-limit").text();
+				var conversationNo;
+				$wk_jq.ajax({
+					url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/noOfRows')?>",
+					type: "GET",
+					dataType: 'html',
+					data:{id:id,agent_id:<?php echo $agentId;?>},
+					success:function(content){
+						var con = content.split("-");
+						conversationNo = con[0];
+						if(conversationNo >countArray[id] || typeof countArray[id] == "undefined" || countArray[id] == "none"|| scrollToTop==1){
+							countArray[id] = conversationNo;
+							thisthis.find(".wk-cs-loader").show();
+							var prevScrollHeight = thisthis.find(".wk-cs-chat-moveable-list").height();
+							$wk_jq.ajax({
+								url: "<?php echo Mage::helper('adminhtml')->getUrl('chatsystem/adminhtml_index/FetchMsgForAdminFromUsers')?>",
+								type: "GET",
+								dataType: 'json',
+								data:{id:id,limit:conversationLimit},
+								success:function(content){
+									console.log(content);
+									content = content.reverse();
+									thisthis.find(".wk-cs-chat-moveable-list").html("");
+									$wk_jq("#conversationTemplate").tmpl(content).appendTo(thisthis.find(".wk-cs-chat-moveable-list"));
+									if (navigator.userAgent.search("MSIE") >= 0){
+				            		}
+								    else{
+										SoundAlert();
+									}
+									if(thisthis.find(".wk-cs-fetch-content-limit").attr("id") == "true"){
+										thisthis.find(".wk-cs-chat-list-small,.wk-cs-chat-list-big").scrollTop(thisthis.find(".wk-cs-chat-moveable-list").height()-prevScrollHeight);
+										thisthis.find(".wk-cs-fetch-content-limit").attr("id","false");
+									}
+									else
+										thisthis.find(".wk-cs-chat-list-small,.wk-cs-chat-list-big").scrollTop(thisthis.find(".wk-cs-chat-moveable-list").height());
+										thisthis.find(".wk-cs-loader").hide();
+										if(con[1]==1){
+											$wk_jq("#"+id).find(".wk-cs-chat-top").removeClass("wk-cs-bg-grey");
+											$wk_jq("#"+id).find(".wk-cs-chat-top").addClass("wk-cs-bg-yellow");
+											BlinkTitle(thisthis.find(".wk-cs-user-name").text());
+										}
+								}
+							});
+						}
+					}
+				});
+			}
+
+
+			//calls when scrolls a chatwindow
+
+			function PleaseFetchMore(thisthis){
+				if($wk_jq(thisthis).scrollTop() == 0){
+					$wk_jq(thisthis).parent().prev().prev().text(parseInt($wk_jq(thisthis).parent().prev().prev().text())+10);
+					$wk_jq(thisthis).parent().prev().prev().attr("id","true");
+					FetchMsgForAdminFromUsers($wk_jq(thisthis).parent().parent().attr("id"),1);
+				}
+			}
+
+			//blick title when there is new message
+
+			function BlinkTitle(name){
+				clearInterval(blinkTitle);
+				var temporaryTitle = currentTitle;
+				var titleSet = "Message from "+name;
+				blinkTitle = setInterval(function(){
+					$wk_jq("title").text(titleSet);
+					var temporaryVariable = titleSet;
+					titleSet = temporaryTitle;
+					temporaryTitle = temporaryVariable;
+				},1000);
+			}
+		</script>
+<?php endif; ?>

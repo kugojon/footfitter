@@ -1,0 +1,1216 @@
+<link href="<?php echo Mage::getBaseUrl('js').'chatsystem/css/cs_front.css'; ?>" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+	if (typeof jQuery == "undefined"){
+		document.write(unescape("%3Cscript src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E"));
+	}
+</script>
+<script src="<?php echo Mage::getBaseUrl('js').'chatsystem/js/jquery.tmpl.min.js'?>" type="text/javascript"></script>
+<script src="<?php echo Mage::getBaseUrl('js').'chatsystem/js/socket.io.js'?>" type="text/javascript"></script>
+<script id="conversationTemplate" type="text/x-jquery-tmpl">
+	{{if isAdmin}}
+		<div class='wk-cs-chat'>
+			<div class='wk-cs-chat-admin'>
+				<span class='wk-cs-chat-content-admin'>
+					<div title=${from} class='wk-cs-chat-ref-admin'>
+						<img src=${image} height='40px' width='40px'/>
+					</div>
+					<span class='wk-cs-inner-admin'>
+						<span>{{html message}}</span>
+						<span class='wk-cs-chat-name'>${created_at}</span>
+					</span>
+				</span>
+			</div>
+		</div>
+	{{else}}
+		<div class='wk-cs-chat'>
+			<span class='wk-cs-chat-content'>
+				<span class='wk-cs-inner'><span>{{html message}}</span>
+					<span class='wk-cs-chat-myname'>${created_at}</span>
+				</span>
+				<div title=${from} class='wk-cs-chat-ref'></div>
+			</span>
+		</div>
+	{{/if}}
+</script>
+<?php
+// require_once Mage::getBaseDir('lib').DS.'chatsystem'.DS.'Initialize.php';
+
+	$helper = Mage::helper('chatsystem');
+	$loadedPageDetail = $this->getLayout()->getUpdate()->getHandles();
+ 	$loadingData = $helper->getTextToLoad();
+ 	$customerStatus = 0;
+ 	$admineMail = $helper->getAdminEmail();
+ 	$agentProfile = array();
+	if($loadedPageDetail[3] != "catalog_product_gallery"){
+		$customerSession = Mage::getSingleton("customer/session");
+		$customer = $customerSession->getCustomer();
+		$customerId = $customer->getId();
+		$customerStatus = $this->getCustomerStatus($customerId);
+		$agentId = $this->getAssignedAgentId($customerId);
+		if($agentId != "")
+		$agentProfile = $this->getAgentProfile($agentId);
+		$customerName = $customer->getName();
+		$timeToUpdate = $helper->getTimeToUpdate()*1000;
+		$conversationCollection = Mage::getModel("chatsystem/conversation")->getCollection()->addFieldToFilter('forid',array('eq'=>$customerId))->addFieldToFilter('agent_id',array('eq'=>$agentId));
+		$conversationCount = count($conversationCollection);?>
+
+		<div id="wk-cs-chatwindow" onclick="changeWindowColor(this,event);">
+			<div id="wk-cs-chat-top" class="wk-cs-bg-grey">
+				<span class="wk-cs-signal-off" id="wk-cs-admin-signal"><span class="wk-cs-main-heading"><?php echo $this->__('Support Chat')?></span>
+				</span>
+				<span class="wk-cs-chat-btn" id="wk-cs-sh"><span class="wk-cs-show"></span>
+				</span>
+			</div>
+			<div id="wk-cs-chat-container">
+				<input type="hidden" value="<?php echo $customerId;?>" id="wk-cs-customer_hidden">
+				<input type="hidden" value="<?php echo $customerName;?>" id="wk-cs-customer_hidden_name">
+				<input type="hidden" value="<?php echo $agentId;?>" id="wk-cs-agent_hidden_id">
+				<input type="hidden" value="<?php echo isset($agentProfile['agent_name'])?$agentProfile['agent_name']:""?>" id="agent_name_hidden">
+				<input type="hidden" value="<?php echo $conversationCount-1;?>" id="conversation_hidden">
+				<div class="wk-cs-form-container">
+					<div class="wk-cs-tabs">
+						<div id="wk-cs-login-tab" class="wk-cs-tab wk-cs-current">
+							<span><strong><?php echo $this->__('Login')?></strong></span>
+						</div>
+						<div class="wk-cs-tab" id="wk-cs-account-tab">
+							<span><strong><?php echo $this->__('Create Account')?></strong></span>
+						</div>
+					</div>
+					<div class="wk-cs-block wk-cs-form" id="wk-cs-login-form" >
+						<span id="wk-cs-error" class="wk-cs-red wk-cs-block"></span>
+						<span class="wk-cs-heading"><?php echo $this->__('Email Address')?></span>
+						<input type="text" name="username" id="wk-cs-email" class="input-text required-entry validate-email"/>
+						<span class="wk-cs-heading"><?php echo $this->__('Password')?></span>
+						<input type="password" name="password" id="wk-cs-password" class="input-text required-entry"/>
+						<span class="wk-cs-heading"><?php echo $this->__('Message')?></span>
+						<textarea id="wk-cs-message" onkeypress="loginButton(this,event);"></textarea>
+						<div id="wk-cs-login-button"><?php echo $this->__('Begin Chat Now')?></div>
+					</div>
+					<div class="wk-cs-form wk-cs-none" id="wk-cs-account-form">
+						<input type="hidden" name="form_key" value="<? echo $this->getFormKey(); ?>" />
+						<span id="wk-cs-error1" class="wk-cs-red wk-cs-block"></span>
+						<span class="wk-cs-heading"><?php echo $this->__('Name')?></span>
+						<input type="text" class="input-text required-entry" name="name" id="wk-cs-firstname" />
+						<span class="wk-cs-heading"><?php echo $this->__('Email Address')?></span>
+						<input type="text" class="input-text required-entry validate-email" name="email" id="wk-cs-email_address"/>
+						<span class="wk-cs-heading"><?php echo $this->__('Message')?></span>
+						<textarea id="wk-cs-create_message" onkeypress="createButton(this,event);"></textarea>
+						<div id="wk-cs-create-button"><?php echo $this->__('Begin Chat Now')?></div>
+					</div>
+					<div class="wk-cs-form wk-cs-align-center wk-cs-none" id="wk-cs-begin-chat">
+						<div class="wk-cs-heading"><?php echo $this->__('Start your chat here!!')?></div>
+						<div class="wk-cs-begin-chat-outer">
+							<div class="wk-cs-red wk-cs-block" id="wk-cs-error-begin-chat"></div>
+						<textarea id="wk-cs-message-begin-chat" onkeypress="beginChat(this,event);"></textarea></div>
+						<div class="wk-cs-button wk-cs-block" id="wk-cs-begin-chat-button"><?php echo $this->__('Begin Chat Now')?></div>
+					</div>
+					<div class="wk-cs-loader wk-cs-none">
+						<span class="wk-cs-welcome"><?php echo $this->__('Hello')?> <span class="wk-cs-blue wk-cs-inline-block"><?php echo $customerName;?></span></span>
+						<div class="wk-cs-loading-image wk-cs-block"></div>
+						<span class="wk-cs-heading wk-cs-blue wk-cs-block"><strong><?php echo $this->__('Loading..')?></strong></span>
+						<span class="wk-cs-loading-message wk-cs-border-solid wk-cs-block" id="wk-cs-load-message"><?php echo $loadingData?></span>
+						<span class="wk-cs-loading-message wk-cs-block wk-cs-border-dash"><?php echo $this->__('Taking too long to respond?')?>
+							<a href="mailto:<?php echo $admineMail;?>" target='_blank'>
+								<span class="wk-cs-blue wk-cs-inline-block" > <?php echo $this->__('Mail us')?></span>
+							</a>
+						</span>
+					</div>
+				</div>
+				<div id="wk-cs-head" class="wk-cs-head wk-cs-align-left wk-cs-none">
+					<div class="wk-cs-agent-image wk-cs-inline-block">
+						<img id="wk-cs-agent-image" src="<?php echo isset($agentProfile['image'])?$agentProfile['image']:"";?>" height="40px" width="40px" />
+					</div>
+					<div class="wk-cs-inline-block">
+						<span id="wk-cs-agent-name" class="wk-cs-blue"><?php echo isset($agentProfile['agent_name'])?$agentProfile['agent_name']:""?>
+						</span>
+						<span><?php echo $this->__('Support Agent')?></span>
+					</div>
+					<div class="wk-cs-option-container wk-cs-inline-block">
+						<?php if($this->getStatus($customerId) == 2) {
+							$cls = "wk-cs-status-busy";
+						} else {
+							$cls = "wk-cs-status-on";
+						}?>
+						<div class="wk-cs-option wk-cs-inline-block"><div id="wk-cs-status" class="wk-cs-status <?php echo $cls; ?>" ></div>
+						</div>
+						<div class="wk-cs-option wk-cs-inline-block"><div id="wk-cs-setting" class="wk-cs-setting" ></div>
+						</div>
+						<div class="wk-cs-option wk-cs-inline-block"><div id="wk-cs-volume" class="wk-cs-volume-off"></div>
+						</div>
+
+						<div class="wk-cs-option wk-cs-none"><div id="wk-cs-back" class="wk-cs-back"></div></div>
+					</div>
+					<span id="wk_cs_head_report" class="wk-cs-green wk-cs-align-center"></span>
+					<div class="wk-cs-setting-container wk-cs-align-left" id="wk-cs-setting-container">
+						<a href="<?php echo $this->getUrl('chatsystem/index/printConversation')?>"><span id="wk-cs-chat_email"><?php echo $this->__('Download Conversation')?></span></a>
+						<span id="wk-cs-manager_report"><?php echo $this->__('Report to Manager')?></span>
+						<span id="wk-cs-end_chat"><?php echo $this->__('End Chat')?></span>
+					</div>
+					<div class="wk-cs-setting-container-status wk-cs-align-left" id="wk-cs-setting-container-status">
+					    <span id="wk-cs-chat-online"><?php echo $this->__('Online')?></span>
+					    <span id="wk-cs-chat-busy"><?php echo $this->__('Busy')?></span>
+					    <span id="wk-cs-chat-offline"><?php echo $this->__('Offline')?></span>
+					</div>
+				</div>
+
+				<div id="wk-cs-chat-list-small" class="wk-cs-none">
+					<div id="wk-cs-loader-container">
+						<span id="wk-cs-loader" class="wk-cs-none"></span>
+					</div>
+					<div id="wk-cs-chat-moveable-list"></div>
+				</div>
+				<div id="wk-cs-enter-text-container-small" class="wk-cs-none">
+					<label for="wk-file-input"><img src="<?php echo Mage::getBaseUrl('js').'chatsystem/images/attachment.png'?>"/></label><input id="wk-file-input" type="file"/>
+					<textarea id="wk-cs-enter-text-small" onkeypress="MsgEntered(this,event);" placeholder="I am typing at this moment."></textarea>
+					<button class="wk-cs-enter-button"></button>
+				</div>
+				<div class="wk-cs-form wk-cs-align-center wk-cs-none" id="wk-cs-report-manager">
+					<div class="wk-cs-heading"><?php echo $this->__('Report To Our Manager!!')?></div>
+					<div class="wk-cs-red wk-cs-block" id="wk-cs-error-report-manager"></div>
+					<textarea id="wk-cs-message-report-manager"></textarea>
+					<div class="wk-cs-button wk-cs-block" id="wk-cs-report-button"><?php echo $this->__('Send Report')?></div>
+				</div>
+				<div class="wk-cs-agent-profile wk-cs-align-center wk-cs-none">
+					<div class="wk-cs-rates">
+						<div class="wk-cs-rate-outer">
+							<div id="wk-cs-rate-1">
+								<div id="wk-cs-rate-2"></div>
+							</div>
+						</div>
+						<div id="wk-cs-agent-total-rates" class="wk-cs-red"></div>
+					</div>
+					<div class="wk-cs-agent-detail wk-cs-align-left">
+						<strong><span><?php echo $this->__('About')?></span><span class="wk-cs-blue" id="wk-cs-agent-name-profile"><?php echo isset($agentProfile['agent_name'])?$agentProfile['agent_name']:""?></span></strong>
+						<div id="wk-cs-about_agent"><?php echo isset($agentProfile['about_agent'])?$agentProfile['about_agent']:""?></div>
+					</div>
+					<div class="wk-cs-button" id="wk-cs-review"><?php echo $this->__('Wanna Appreciate? Contact Manager')?>
+					</div>
+				</div>
+				<div class="wk-cs-agent-review wk-cs-align-center wk-cs-none">
+					<h5 class="wk-cs-align-center"><?php echo $this->__('Need Your Feedback')?></h5>
+					<div><?php echo $this->__('Your rating and comment really have an impact on our customer support system, so please take a minute to review our support agent and its quality.')?></div>
+					<div class="wk-cs-rating">
+						<div class="wk-cs-star wk-cs-notStared" id="wk-cs-star-1"></div>
+						<div class="wk-cs-star wk-cs-notStared" id="wk-cs-star-2"></div>
+						<div class="wk-cs-star wk-cs-notStared" id="wk-cs-star-3"></div>
+						<div class="wk-cs-star wk-cs-notStared" id="wk-cs-star-4"></div>
+						<div class="wk-cs-star wk-cs-notStared" id="wk-cs-star-5"></div>
+					</div>
+					<textarea id="wk-cs-comment" placeholder="Leave a Comment"></textarea>
+					<div id="wk-cs-comment-review"></div>
+					<div class="wk-cs-button" id="wk-cs-comment-button"><?php echo $this->__('Submit Reviews..')?></div>
+				</div>
+				<div class="wk-cs-ajaxloader wk-cs-none">
+					<h1 class="wk-cs-align-center">Loading..</h1>
+					<div class="wk-cs-ajaxloader-inner">
+					</div>
+				</div>
+			</div>
+		</div>
+		<audio id="wk-cs-chat-notify">
+			<source src="<?php echo Mage::getBaseUrl('js').'chatsystem/notify.ogg';?>" type="audio/ogg">
+		</audio>
+		<script type="text/javascript">
+			var $wk_jq = jQuery.noConflict();
+			var conversationCount = 10,rate = 0,blinkTitle,currentTitle = $wk_jq("title").text(),isOpenFirstTime = true,volume;
+
+			var host = "<?php echo Mage::getStoreConfig("chatsystem/chatsystem/host"); ?>";
+			var port = "<?php echo Mage::getStoreConfig("chatsystem/chatsystem/port"); ?>";
+			var socket = io(host + ':' + port);
+
+			//call when whole document get ready
+
+			$wk_jq(document).ready(function(){
+					CheckAdminStatus();
+					// socket adminConnected
+					socket.on('adminConnected', function (data) {
+						CheckAdminStatus();
+					});
+
+					// socket adminMessage
+					socket.on('adminMessage', function (data) {
+						CheckAdminStatus();
+					});
+
+					// socket adminStatusUpdate
+					socket.on('adminStatusUpdate', function (data) {
+						setTimeout(function(){ CheckAdminStatus(); }, 3000);
+
+					});
+
+					<?php if(isset($customerId)) {
+						if($customerStatus == 1){
+							?>
+							moveToLoader('#wk-cs-login-button');
+					<?php }
+					?>
+						$wk_jq("#wk-cs-error-begin-chat").text('');
+						beginChatPage($wk_jq('#wk-cs-login-button'));
+					<?php }?>
+
+
+			});
+
+			// on status change to busy
+			$wk_jq("body").on("click","#wk-cs-chat-busy",function(){
+				$wk_jq.ajax({
+					url:"<?php echo $this->getUrl('chatsystem/index/updateStatus')?>",
+					type:"POST",
+					dataType:'json',
+					data:{status:2},
+				});
+				$wk_jq('#wk-cs-status').removeClass('wk-cs-status-on');
+				$wk_jq('#wk-cs-status').removeClass('wk-cs-status-off');
+				$wk_jq('#wk-cs-status').addClass('wk-cs-status-busy');
+
+				var updateStatusData = {
+					receiver: $wk_jq("#wk-cs-agent_hidden_id").val(),
+					status: 2,
+				}
+				socket.emit("updateStatus",updateStatusData);
+			});
+			// on status change to online
+			$wk_jq("body").on("click","#wk-cs-chat-online",function(){
+				$wk_jq.ajax({
+					url:"<?php echo $this->getUrl('chatsystem/index/updateStatus')?>",
+					type:"POST",
+					dataType:'json',
+					data:{status:1},
+				});
+				$wk_jq('#wk-cs-status').removeClass('wk-cs-status-busy');
+				$wk_jq('#wk-cs-status').removeClass('wk-cs-status-off');
+				$wk_jq('#wk-cs-status').addClass('wk-cs-status-on');
+				CheckAdminStatus();
+
+				var updateStatusData = {
+					receiver: $wk_jq("#wk-cs-agent_hidden_id").val(),
+					status: 1,
+				}
+				socket.emit("updateStatus",updateStatusData);
+			});
+			// on status change to offline
+			$wk_jq("body").on("click","#wk-cs-chat-offline",function(){
+
+				$wk_jq('#wk-cs-status').removeClass('wk-cs-status-busy');
+				$wk_jq('#wk-cs-status').addClass('wk-cs-status-on');
+				$wk_jq("#wk-cs-end_chat").trigger("click");
+
+				var updateStatusData = {
+					receiver: $wk_jq("#wk-cs-agent_hidden_id").val(),
+					status: 0,
+				}
+				socket.emit("updateStatus",updateStatusData);
+			});
+
+			//toggle setting container on bodu click
+
+			$wk_jq('body').on('click',function(event){
+				var display = $wk_jq(this).parent().parent().find("#wk-cs-setting-container").css("display");
+				if(display == 'block')
+					$wk_jq(this).parent().parent().find(".wk-cs-setting-container").toggle();
+
+				var display_status = $wk_jq(this).parent().parent().find("#wk-cs-setting-container-status").css("display");
+				if(display_status == 'block')
+					$wk_jq(this).parent().parent().find(".wk-cs-setting-container-status").toggle();
+			});
+
+			//volume on off
+
+			$wk_jq("#wk-cs-volume").on('click',function(){
+				if(volume == 'on'){
+					volume = 'off';
+					$wk_jq("#wk-cs-volume").removeClass('wk-cs-volume-on');
+					$wk_jq("#wk-cs-volume").addClass('wk-cs-volume-off');
+				}
+				else{
+					volume = 'on';
+					$wk_jq("#wk-cs-volume").removeClass('wk-cs-volume-off');
+					$wk_jq("#wk-cs-volume").addClass('wk-cs-volume-on');
+				}
+			});
+
+			//Play sound
+
+			function SoundAlert(){
+				if(volume == 'on')				{
+					$wk_jq("#wk-cs-chat-notify")[0].play();
+				}
+			}
+
+			//press enter button to send message
+
+			$wk_jq('.wk-cs-enter-button').on('click',function(){
+				var e = $wk_jq.Event("keypress");
+   				e.keyCode = 13;
+				$wk_jq("#wk-cs-enter-text-small").trigger(e);
+			});
+
+			//on agent image click display agent profile
+
+			$wk_jq(".wk-cs-agent-image").on("click",function(){
+				var data = $wk_jq(this);
+				$wk_jq("#wk-cs-report-manager").addClass("wk-cs-none");
+				moveToAgent(data);
+				moveRatePage(data);
+				$wk_jq(this).parent().parent().find(".wk-cs-agent-profile").removeClass("wk-cs-none");
+				$wk_jq(this).parent().parent().find(".wk-cs-agent-profile").addClass("wk-cs-block");
+				var display = $wk_jq(this).parent().parent().find("#wk-cs-setting-container").css("display");
+				if(display == 'block')
+					$wk_jq(this).parent().parent().find(".wk-cs-setting-container").toggle();
+				$wk_jq(this).parent().find(".wk-cs-option").addClass("wk-cs-none").removeClass("wk-cs-inline-block");
+				$wk_jq(this).parent().find(".wk-cs-option >#wk-cs-back").parent().removeClass("wk-cs-none").addClass('wk-cs-inline-block');
+				calculateRates();
+			});
+
+			//move on rate page which shows total rates of agent
+
+			function moveRatePage(data){
+				if(!$wk_jq(data).parent().parent().find(".wk-cs-agent-review").hasClass("wk-cs-none")){
+					$wk_jq(data).parent().parent().find(".wk-cs-agent-review").addClass("wk-cs-none");
+				}
+			}
+
+			//move to agent profile page
+
+			function moveToAgent(data){
+				$wk_jq(data).parent().parent().find("#wk-cs-chat-list-small").removeClass("wk-cs-block");
+				$wk_jq(data).parent().parent().find("#wk-cs-chat-list-small").addClass("wk-cs-none");
+				$wk_jq(data).parent().parent().find("#wk-cs-enter-text-container-small").addClass("wk-cs-none");
+				$wk_jq(data).parent().parent().find("#wk-cs-enter-text-container-small").removeClass("wk-cs-block");
+			}
+
+			//call on click of report to agent and move to send report page
+
+			$wk_jq("#wk-cs-manager_report").on('click',function(){
+				$wk_jq(this).parent().toggle();
+				var data = $wk_jq('.wk-cs-agent-image');
+				$wk_jq(data).parent().find(".wk-cs-option").addClass("wk-cs-none").removeClass("wk-cs-inline-block");
+				$wk_jq(data).parent().find(".wk-cs-option >#wk-cs-back").parent().removeClass("wk-cs-none").addClass('wk-cs-inline-block');
+				moveToAgent(data);
+				$wk_jq("#wk-cs-report-manager").removeClass('wk-cs-none');
+				$wk_jq("#wk-cs-report-manager").addClass('wk-cs-block');
+			});
+
+			//hits when clicking of report button and back to agent profile
+
+			$wk_jq("#wk-cs-report-button").on('click',function(){
+				var val = $wk_jq("#wk-cs-message-report-manager").val();
+				if(typeof(val) != 'undefined' && val != ""){
+					$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+					$wk_jq.ajax({
+						url:"<?php echo $this->getUrl('chatsystem/index/reportToManager')?>",
+						type:"POST",
+						dataType:'json',
+						data:{agent_id:$wk_jq("#wk-cs-agent_hidden_id").val(),message:val},
+						success:function(content){
+							$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+							if(content.status){
+								$wk_jq("#wk_cs_head_report").text("Report has been sent successfully!");
+								waiting($wk_jq("#wk_cs_head_report"));
+								$wk_jq("#wk-cs-message-report-manager").val("");
+								$wk_jq("#wk-cs-back").trigger("click");
+							}
+						}
+					});
+				}
+				else{
+					$wk_jq("#wk-cs-error-report-manager").text("Please enter text");
+				}
+			});
+
+			//this function error or success message in 5 second.
+
+			function waiting(div){
+				setTimeout(function(){
+					$wk_jq(div).text("");
+				}, 5000);
+			}
+
+			//claculate total rate of agent to display on agent profile
+
+			function calculateRates(){
+				$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+				$wk_jq.ajax({
+					url:"<?php echo $this->getUrl('chatsystem/index/calculateRates')?>",
+					type:"POST",
+					dataType:'json',
+					data:{agent_id:$wk_jq("#wk-cs-agent_hidden_id").val()},
+					success:function(content){
+						$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+						if(content['rate'] != "") {
+							$wk_jq("#wk-cs-rate-2").css({'width':content['rate']+'%'});
+							$wk_jq("#wk-cs-agent-total-rates").text("Total Rates: "+content['total_rate']);
+						}
+					}
+				});
+			}
+
+			//when agent or customer ends chat then it call to back to begin chat page
+
+			function backToBeginChatPage(data){
+				$wk_jq("#wk-cs-head").removeClass("wk-cs-block");
+				$wk_jq("#wk-cs-head").addClass("wk-cs-none");
+				$wk_jq("#wk-cs-chat-list-small").removeClass("wk-cs-block");
+				$wk_jq("#wk-cs-chat-list-small").addClass("wk-cs-none");
+				$wk_jq("#wk-cs-enter-text-container-small").removeClass("wk-cs-block");
+				$wk_jq("#wk-cs-enter-text-container-small").addClass("wk-cs-none");
+				$wk_jq(".wk-cs-form-container").removeClass("wk-cs-none");
+				$wk_jq(".wk-cs-form-container").addClass("wk-cs-block");
+				waiting($wk_jq("#wk-cs-error-begin-chat"));
+				beginChatPage($wk_jq('#wk-cs-login-button'));
+			}
+
+			//calls when click on back button and get nack to chat window
+
+			$wk_jq("#wk-cs-back").on("click",function(){
+				$wk_jq(this).parent().addClass("wk-cs-none").removeClass('wk-cs-inline-block');
+				$wk_jq(this).parent().prevAll('div').removeClass("wk-cs-none").addClass('wk-cs-inline-block');
+				chatPannel($wk_jq('.wk-cs-loader'));
+				$wk_jq(".wk-cs-agent-profile").removeClass("wk-cs-block");
+				$wk_jq(".wk-cs-agent-profile").addClass("wk-cs-none");
+				$wk_jq(".wk-cs-agent-review").removeClass("wk-cs-block");
+				$wk_jq(".wk-cs-agent-review").addClass("wk-cs-none");
+				$wk_jq("#wk-cs-report-manager").addClass("wk-cs-none");
+			});
+
+			//call when wanna appreiciate agent and open window to enter reviews
+
+			$wk_jq("#wk-cs-review").on("click",function(){
+				$wk_jq(this).parent().removeClass("wk-cs-block");
+				$wk_jq(this).parent().addClass("wk-cs-none");
+				$wk_jq(this).parent().parent().find(".wk-cs-agent-review").removeClass("wk-cs-none");
+			});
+
+			//calls when we click on start to select rates, when it changes to stared
+
+			$wk_jq(".wk-cs-star").on("click",function(){
+				var star = $wk_jq(this).attr('id');
+				var array = star.split("-");
+				rate = array[3];
+				$wk_jq(this).nextAll().removeClass("wk-cs-stared");
+				$wk_jq(this).nextAll().addClass("wk-cs-notStared");
+				for (var i = array[3]; i >0; i--) {
+					$wk_jq("#wk-cs-star-"+i).removeClass("wk-cs-notStared");
+					$wk_jq("#wk-cs-star-"+i).addClass("wk-cs-stared");
+				}
+			});
+
+			//This function call when click on window and change the window color if there is new message notification
+
+			function changeWindowColor(thisthis,e){
+				var outerClass=$wk_jq(e.target).attr('class');
+				if(outerClass!="wk-cs-ajaxloader"){
+					var agentid = $wk_jq('#wk-cs-agent_hidden_id').val();
+					if(typeof(agentid) != 'undefined' && agentid != ""){
+						clearInterval(blinkTitle);
+						$wk_jq.ajax({
+							url: "<?php echo $this->getUrl('chatsystem/index/notifyMsgIsReadnow')?>",
+							type: "POST",
+							data:{userid :$wk_jq("#wk-cs-customer_hidden").val(),agentId:agentid}
+						});
+						$wk_jq(thisthis).find("#wk-cs-chat-top").removeClass("wk-cs-bg-yellow");
+						$wk_jq(thisthis).find("#wk-cs-chat-top").addClass("wk-cs-bg-grey");
+						$wk_jq("title").text(currentTitle);
+					}
+				}
+			}
+
+			//function to create a random password for customer account
+
+			function randString()	{
+				var text = '';
+			    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+			    for(var i = 0; i < 8; i++)	{
+			        text += possible.charAt(Math.floor(Math.random() * possible.length));
+			    }
+			    return text;
+			}
+
+			//calls when click on submit reviews
+
+			$wk_jq("#wk-cs-comment-button").on("click",function(){
+				var comment = $wk_jq("#wk-cs-comment").val();
+				if ((typeof(comment) != 'undefined' && comment != "") || rate != 0) {
+					$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+					$wk_jq.ajax({
+						url:"<?php echo $this->getUrl('chatsystem/index/saveComment')?>",
+						type:"POST",
+						data:{comment:comment,rate:rate,agent_id:$wk_jq("#wk-cs-agent_hidden_id").val()},
+						dataType:'json',
+						success:function(content){
+							$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+							$wk_jq(".wk-cs-stared").addClass("wk-cs-notStared").removeClass("wk-cs-stared");
+							$wk_jq("#wk-cs-comment").val("");
+							rate = 0;
+							if(content.status == 0)	{
+								$wk_jq("#wk-cs-comment-review").text("please enter comment to submit..");
+								$wk_jq("#wk-cs-comment-review").addClass("wk-cs-red").removeClass("wk-cs-green");
+								waiting($wk_jq("#wk-cs-comment-review"));
+							} else {
+								$wk_jq("#wk-cs-comment-review").text("Feedback has been submitted successfully!");
+								$wk_jq("#wk-cs-comment-review").removeClass("wk-cs-red").addClass("wk-cs-green");
+								waiting($wk_jq("#wk-cs-comment-review"));
+							}
+						}
+					});
+				} else {
+					$wk_jq("#wk-cs-comment-review").text("Please fill at least one field!!");
+					$wk_jq("#wk-cs-comment-review").addClass("wk-cs-red").removeClass("wk-cs-green");
+					waiting($wk_jq("#wk-cs-comment-review"));
+				}
+			});
+
+			//occures when customer end chat by their end
+
+			$wk_jq("#wk-cs-end_chat").on("click",function(){
+				$wk_jq(this).parent().toggle();
+				$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+				$wk_jq.ajax({
+					url:"<?php echo $this->getUrl('chatsystem/index/endChat')?>",
+					type:"POST",
+					dataType:'json',
+					success:function(content){
+						$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+						if(content.status == 1)	{
+							$wk_jq('#wk-cs-agent_hidden_id').val("");
+							$wk_jq("#wk-cs-message-begin-chat").val("");
+							$wk_jq("#wk-cs-error-begin-chat").text('Chat ended successfully!!').addClass("wk-cs-green").removeClass('wk-cs-red');
+							backToBeginChatPage($wk_jq(this));
+						}
+					}
+				});
+			});
+
+			//calls if enter is pressed in begin chat page
+
+			function beginChat(thisthis,e){
+				if(e.keyCode == 13 && !e.shiftKey){
+					if (navigator.userAgent.search("MSIE") >= 0) {
+
+			        }else{
+						e.preventDefault();
+					}
+					$wk_jq("#wk-cs-begin-chat-button").trigger('click');
+				}
+				if(e.keyCode == 13 && e.shiftKey){
+					$wk_jq(thisthis).val($wk_jq(thisthis).val()).focus();
+				}
+			}
+
+
+			//call when click on begin chat now
+
+			$wk_jq("#wk-cs-begin-chat-button").on('click',function(){
+				var message = $wk_jq("#wk-cs-message-begin-chat").val();
+				var data = $wk_jq(this);
+				if(typeof(message) != 'undefined' && message != "")	{
+					$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+					$wk_jq.ajax({
+						url:"<?php echo $this->getUrl('chatsystem/index/saveCustomerStatus')?>",
+						type:"POST",
+						dataType:'json',
+						success:function(content){
+							$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+							if(content.status != 0)	{
+								moveToLoader(data,message);
+							}
+						}
+					});
+				}
+				else{
+					$wk_jq("#wk-cs-error-begin-chat").text("Please enter text").addClass('wk-cs-red').removeClass('wk-cs-green');
+				}
+			});
+
+			//Calls when press key on create account page
+
+			function createButton(thisthis,e){
+				if(e.keyCode == 13 && !e.shiftKey){
+					if (navigator.userAgent.search("MSIE") >= 0) {
+
+			        }else{
+						e.preventDefault();
+					}
+					$wk_jq("#wk-cs-create-button").trigger('click');
+				}
+				if(e.keyCode == 13 && e.shiftKey){
+						$wk_jq(thisthis).val($wk_jq(thisthis).val()).focus();
+				}
+			}
+
+			//call when click on account create button
+
+			$wk_jq("#wk-cs-create-button").on("click",function(){
+				var val = $wk_jq.trim($wk_jq('#wk-cs-create_message').val());
+				var email = $wk_jq("#wk-cs-email_address").val();
+				var name = $wk_jq('#wk-cs-firstname').val();
+				if(typeof(val) != "undefined" && val != "" && typeof(email) != "undefined" && email != "" && typeof(name) != "undefined" && name != "")	{
+					var data = $wk_jq(this);
+					var button = $wk_jq(this);
+					var nameArray = [];
+					nameArray = name.split(" ");
+					var firstname = $wk_jq.trim(nameArray[0]);
+					var len = nameArray.length;
+					len = len-1;
+					var lastname = nameArray[len];
+					if(len == 0)
+						lastname = "";
+					var password = randString();
+					$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+					$wk_jq.ajax({
+						url:"<?php echo $this->getUrl('chatsystem/chatlogin/userCreatePost')?>",
+						type:"POST",
+						data:{firstname:firstname,lastname:lastname,email:$wk_jq("#wk-cs-email_address").val(),password:password,confirmation:password},
+						dataType:'json',
+						success:function(content){
+							$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+							if(content['loggedIn'] == 0){
+								$wk_jq("#wk-cs-error1").text(content['message']);
+								return false;
+							}
+							else if(content['loggedIn']==1)	{
+								name = content['customer_name'];
+								id = content['customer'];
+								$wk_jq('#wk-cs-customer_hidden').val(id);
+								$wk_jq('#wk-cs-customer_hidden_name').val(name);
+								$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+								$wk_jq.ajax({
+									url:"<?php echo $this->getUrl('chatsystem/index/saveCustomerStatus')?>",
+									type:"POST",
+									dataType:'json',
+									success:function(content){
+										$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+										if(content.status != 0)	{
+											$wk_jq("#wk-cs-error1").text("");
+											$wk_jq("#wk_cs_head_report").text("Password has been sent to your email!");
+											waiting($wk_jq("#wk_cs_head_report"));
+											moveToLoader(data,val);
+										}
+									},
+									error:function(xhr, ajaxOptions, thrownError){
+										alert(xhr.status);
+									}
+								});
+							}
+							else{
+								$wk_jq("#wk-cs-error1").text("Enable to login, please try again..");
+							}
+						}
+					});
+				}
+				else{
+					$wk_jq("#wk-cs-error1").text("All Fields are required fileds.");
+				}
+			});
+
+			//Function moves  to loader page of assigning agent
+
+			function moveToLoader(link,val)	{
+				if(typeof(val)!='undefined' && val!="")
+					val = val.replace(/\</g,'&lt;').replace(/\>/g,'&gt;').replace(/\n/g,'</br>');
+				$wk_jq.ajax({
+					url 	: 	"<?php echo $this->getUrl('chatsystem/index/checkCustomerStatus')?>",
+					type 	: 	"POST",
+					dataType: 	"json",
+					success:function(content){
+						$wk_jq(link).parent().removeClass("wk-cs-block");
+						$wk_jq(link).parent().addClass("wk-cs-none");
+						$wk_jq(link).parent().parent().find(".wk-cs-tabs").addClass("wk-cs-none");
+						if(content.status == 1){
+							$wk_jq(".wk-cs-welcome >span").text($wk_jq('#wk-cs-customer_hidden_name').val());
+							$wk_jq(link).parent().parent().find(".wk-cs-loader").removeClass("wk-cs-none");
+							$wk_jq(link).parent().parent().find(".wk-cs-loader").addClass("wk-cs-block");
+							$wk_jq.ajax({
+								url 	: 	"<?php echo $this->getUrl('chatsystem/index/saveAgent')?>",
+								type 	: 	"POST",
+								data 	: 	{fromname:$wk_jq('#wk-cs-customer_hidden_name').val(),message:val,forid:$wk_jq('#wk-cs-customer_hidden').val()},
+								dataType: 	"json",
+								success:function(temp){
+									if(temp['setAgent'] != 0){
+										var loader = $wk_jq(".wk-cs-loader");
+										$wk_jq("#wk-cs-agent_hidden_id").val(temp['agent_id']);
+										if(typeof(temp['image'] != 'undefined') && temp['image'] != ""){
+											$wk_jq("#wk-cs-agent-image").attr('src',temp['image']);
+										}
+										$wk_jq("#conversation_hidden").val(temp['conversation']-1);
+										$wk_jq("#agent_name_hidden").val(temp['agent_name']);
+										$wk_jq("#wk-cs-agent-name").text(temp['agent_name']);
+										$wk_jq("#wk-cs-agent-name-profile").text(temp['agent_name'])
+										$wk_jq("#wk-cs-about_agent").text(temp['about_agent']);
+										$wk_jq(loader).removeClass("wk-cs-block");
+										$wk_jq(loader).addClass("wk-cs-none");
+										$wk_jq(loader).parent().addClass("wk-cs-none");
+										chatPannel($wk_jq(loader));
+									} else {
+										$wk_jq("#wk-cs-error-begin-chat").text(temp['error']).addClass('wk-cs-red').removeClass('wk-cs-green');
+										$wk_jq("#wk-cs-message-begin-chat").val("");
+										beginChatPage($wk_jq('#wk-cs-login-button'));
+									}
+									//  socket newUserConneted
+									var newUserConnectData = {
+										sender: 'customer',
+										receiver: $wk_jq('#wk-cs-agent_hidden_id').val(),
+										customerId: $wk_jq('#wk-cs-customer_hidden').val(),
+										customerName: $wk_jq('#wk-cs-customer_hidden_name').val(),
+									}
+									socket.emit('newUserConneted',newUserConnectData);
+								}
+							});
+						} else {
+							var loader = $wk_jq(".wk-cs-loader");
+							$wk_jq(loader).parent().addClass("wk-cs-none");
+							isOpenFirstTime = false;
+							chatPannel($wk_jq(loader));
+						}
+					}
+				});
+			}
+
+			function beginChatPage(data)
+			{
+				$wk_jq(data).parent().parent().find(".wk-cs-loader").removeClass("wk-cs-block");
+				$wk_jq(data).parent().parent().find(".wk-cs-loader").addClass("wk-cs-none");
+				$wk_jq(data).parent().parent().find("#wk-cs-begin-chat").removeClass("wk-cs-none");
+				$wk_jq(data).parent().parent().find("#wk-cs-begin-chat").addClass("wk-cs-block");
+				$wk_jq(data).parent().parent().find(".wk-cs-tabs").addClass("wk-cs-none");
+				$wk_jq(data).parent().removeClass("wk-cs-block");
+				$wk_jq(data).parent().addClass("wk-cs-none");
+			}
+
+			//Back to chat pannel
+
+			function chatPannel(thisthis){
+				$wk_jq(thisthis).parent().parent().find("#wk-cs-chat-list-small").removeClass("wk-cs-none");
+				$wk_jq(thisthis).parent().parent().find("#wk-cs-chat-list-small").addClass("wk-cs-block");
+				$wk_jq(thisthis).parent().parent().find("#wk-cs-enter-text-container-small").addClass("wk-cs-block");
+				$wk_jq(thisthis).parent().parent().find("#wk-cs-enter-text-container-small").removeClass("wk-cs-none");
+				$wk_jq(thisthis).parent().parent().find("#wk-cs-head").addClass("wk-cs-block");
+				$wk_jq(thisthis).parent().parent().find("#wk-cs-head").removeClass("wk-cs-none");
+				FetchMsgFromAdminForUsers(false);
+				isOpenFirstTime = true;
+			}
+
+			//function shows the setting container
+
+			$wk_jq("#wk-cs-setting").click(function(event){
+				event.stopPropagation();
+				$wk_jq(".wk-cs-setting-container").toggle();
+			});
+
+			// function shows the status setting container
+
+			$wk_jq("#wk-cs-status").click(function(event){
+				event.stopPropagation();
+				$wk_jq(".wk-cs-setting-container-status").toggle();
+			});
+
+			//click on account tab displays create account form
+
+			$wk_jq("#wk-cs-account-tab").click(function(){
+				$wk_jq("#wk-cs-account-form").removeClass('wk-cs-none');
+				$wk_jq("#wk-cs-account-form").addClass('wk-cs-block');
+				$wk_jq("#wk-cs-login-form").removeClass("wk-cs-block");
+				$wk_jq("#wk-cs-login-form").addClass("wk-cs-none");
+				$wk_jq("#wk-cs-login-tab").removeClass("wk-cs-current");
+				$wk_jq("#wk-cs-account-tab").addClass("wk-cs-current");
+			});
+
+			//click on login tab displays login form
+
+			$wk_jq("#wk-cs-login-tab").click(function(){
+				$wk_jq("#wk-cs-login-form").removeClass('wk-cs-none');
+				$wk_jq("#wk-cs-login-form").addClass('wk-cs-block');
+				$wk_jq("#wk-cs-account-form").removeClass("wk-cs-block");
+				$wk_jq("#wk-cs-account-form").addClass("wk-cs-none");
+				$wk_jq("#wk-cs-account-tab").removeClass("wk-cs-current");
+				$wk_jq("#wk-cs-login-tab").addClass("wk-cs-current");
+			});
+
+			//call when key press in login account page in textarea and if enter ket pressed it sends data
+
+			function loginButton(thisthis,e){
+				if(e.keyCode == 13 && !e.shiftKey){
+					if (navigator.userAgent.search("MSIE") >= 0) {
+
+			        }else{
+						e.preventDefault();
+					}
+					$wk_jq("#wk-cs-login-button").trigger('click');
+				}
+				if(e.keyCode == 13 && e.shiftKey){
+					$wk_jq(thisthis).val($wk_jq(thisthis).val()).focus();
+				}
+			}
+
+			//click on login button in logins the customer account in magento and chat system
+
+
+			$wk_jq("#wk-cs-login-button").on("click",function(){
+				var data = $wk_jq(this);
+				var email = $wk_jq("#wk-cs-email").val();
+				var password = $wk_jq("#wk-cs-password").val();
+				var message = $wk_jq('#wk-cs-message').val();
+				if(typeof(email) != "undefined" && email != "" && typeof(password) != "undefined" && password != "" && typeof(message) != 'undefined' && message != "")
+					customerLogin(data);
+				else{
+					$wk_jq("#wk-cs-error").text("All fields are required fileds.");
+				}
+			});
+
+			//function validate the customer details and login
+
+			function customerLogin(data){
+				var id;
+				var val = $wk_jq('#wk-cs-message').val();
+				$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+
+				$wk_jq.ajax({
+					url:"<?php echo $this->getUrl('chatsystem/customer/userLoginPost')?>",
+					type:"POST",
+					data:{username:$wk_jq('#wk-cs-email').val(),
+					password:$wk_jq('#wk-cs-password').val()},
+					dataType:'json',
+					success:function(content){
+						$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+						$wk_jq("#wk-cs-error").text("");
+						if(content['loggedIn'] == 0)		{
+							$wk_jq("#wk-cs-error").text(content['message']);
+							return false;
+						}
+						else{
+							name = content['customer_name'];
+							id = content['customer_id'];
+							$wk_jq('#wk-cs-customer_hidden').val(id);
+							$wk_jq('#wk-cs-customer_hidden_name').val(name);
+							$wk_jq(".wk-cs-ajaxloader").removeClass('wk-cs-none');
+							$wk_jq.ajax({
+								url:"<?php echo $this->getUrl('chatsystem/index/saveCustomerStatus')?>",
+								type:"POST",
+								dataType:'json',
+								success:function(content){
+									$wk_jq(".wk-cs-ajaxloader").addClass('wk-cs-none');
+									if(content.status != 0)	{
+										moveToLoader(data,val);
+										$wk_jq("#wk-cs-error").text("");
+									}
+								}
+							});
+						}
+					}
+				});
+			}
+
+			//It checks admin status whether admin login or not
+
+			function CheckAdminStatus()	{
+				$wk_jq.ajax({
+					url 	: 	"<?php echo $this->getUrl('chatsystem/index/checkAdminStatus')?>",
+					type 	: 	"POST",
+					dataType: 	"html",
+					data:{agent_id:$wk_jq('#wk-cs-agent_hidden_id').val()},
+					success : 	function(data){
+						var indicator = $wk_jq("#wk-cs-admin-signal");
+						data = $wk_jq.parseJSON(data);
+						if(data['status'] == 1)	{
+							if(!indicator.hasClass("wk-cs-signal-on"))
+								indicator.attr("class","wk-cs-signal-on");
+								CheckIfNewMessageThere();
+						} else if(data['status'] == 2) {
+							if(!indicator.hasClass("wk-cs-signal-busy"))
+								indicator.attr("class","wk-cs-signal-busy");
+								CheckIfNewMessageThere();
+						}
+						else{
+							if(!indicator.hasClass("wk-cs-signal-off"))
+								indicator.attr("class","wk-cs-signal-off");
+							// setTimeout(function(){
+							// 	CheckAdminStatus();
+							// },<?php echo $timeToUpdate?>);
+						}
+
+						if(data['end'] == true){
+							$wk_jq("#wk-cs-chat-top").removeClass("wk-cs-bg-yellow");
+							$wk_jq("#wk-cs-chat-top").addClass("wk-cs-bg-grey");
+							clearInterval(blinkTitle);
+							if(typeof($wk_jq('#wk-cs-agent_hidden_id').val()) != 'undefined' && $wk_jq('#wk-cs-agent_hidden_id').val() != ""){
+								$wk_jq('#wk-cs-agent_hidden_id').val("");
+								$wk_jq("#wk-cs-error-begin-chat").text('Agent has ended chat, please start chat again!').addClass("wk-cs-green").removeClass('wk-cs-red');
+								backToBeginChatPage($wk_jq("#wk-cs-end_chat"));
+							}
+						}
+					}
+				});
+			}
+
+			//Check whether there is a new message or not?
+
+			function CheckIfNewMessageThere()	{
+				$wk_jq.ajax({
+					url 	: 	"<?php echo $this->getUrl('chatsystem/index/checkIfNewMessageThere')?>",
+					data 	: 	{userid:$wk_jq('#wk-cs-customer_hidden').val(),agent_id:$wk_jq("#wk-cs-agent_hidden_id").val()},
+					type 	: 	"POST",
+					dataType: 	"html",
+					success : 	function(data){
+						if(data == "yes"){
+							FetchMsgFromAdminForUsers(false);
+							BlinkTitle();
+						}
+						// setTimeout(function(){
+						// 	CheckAdminStatus();
+						// },<?php echo $timeToUpdate?>);
+					}
+				});
+			}
+
+			//By clicking on top of the window is open and close the window
+
+			$wk_jq("#wk-cs-chat-top").click(function(e){
+				if(e.target.id != "wk-cs-fs-span" && e.target.id != "wk-cs-fs"){
+					if($wk_jq("#wk-cs-sh").find("span").attr("class") == "wk-cs-hide"){
+						$wk_jq("#wk-cs-sh").find("span").attr("class","wk-cs-show");
+						$wk_jq("#wk-cs-chat-container").hide();
+					}
+					else{
+						$wk_jq("#wk-cs-sh").find("span").attr("class","wk-cs-hide");
+						$wk_jq("#wk-cs-chat-container").show();
+					}
+				}
+			});
+
+			//If there is any new message then it fetche messages from data base
+
+			function FetchMsgFromAdminForUsers(scrollHalf){
+				var conversationLimit;
+				$wk_jq.ajax({
+					url 	: 	"<?php echo $this->getUrl('chatsystem/index/newMessage')?>",
+					type 	: 	"POST",
+					dataType: 	"json",
+					data: {agent_id:$wk_jq("#wk-cs-agent_hidden_id").val()},
+					success : 	function(content){
+						if(content['noOfNotification'] == 1)	{
+							$wk_jq("#wk-cs-chat-top").removeClass("wk-cs-bg-grey");
+							$wk_jq("#wk-cs-chat-top").addClass("wk-cs-bg-yellow");
+						}
+						conversationLimit = content['noOfConversation'];
+						if(scrollHalf == true){
+							$wk_jq("#conversation_hidden").val($wk_jq("#conversation_hidden").val()-1);
+						}
+						if(conversationLimit > $wk_jq("#conversation_hidden").val()){
+							$wk_jq("#wk-cs-loader").removeClass("wk-cs-none");
+							$wk_jq("#wk-cs-loader").addClass("wk-cs-block");
+							var prevScrollHeight = $wk_jq("#wk-cs-chat-moveable-list").height();
+							var id = $wk_jq("#wk-cs-customer_hidden").val();
+							$wk_jq.ajax({
+								url 	: 	"<?php echo $this->getUrl('chatsystem/index/fetchMsgForAdminFromUsers')?>",
+								type 	: 	"POST",
+								dataType: 	"json",
+								data 	: 	{id:id,limit:conversationCount,agent_id:$wk_jq('#wk-cs-agent_hidden_id').val()},
+								success : 	function(conversation){
+									conversation = conversation.reverse();
+									$wk_jq("#wk-cs-chat-moveable-list").html("");
+									if (navigator.userAgent.search("MSIE") >= 0){
+					                }
+									else{
+										if(conversationLimit > $wk_jq("#conversation_hidden").val()){
+											SoundAlert();
+											$wk_jq("#conversation_hidden").val(conversationLimit);
+										}
+									}
+									$wk_jq("#conversationTemplate").tmpl(conversation).appendTo("#wk-cs-chat-moveable-list");
+									if(scrollHalf == true)
+										$wk_jq("#wk-cs-chat-list-small,#wk-cs-chat-list-big").scrollTop($wk_jq("#wk-cs-chat-moveable-list").height()-prevScrollHeight);
+									else
+										$wk_jq("#wk-cs-chat-list-small,#wk-cs-chat-list-big").scrollTop($wk_jq("#wk-cs-chat-moveable-list").height());
+									$wk_jq("#wk-cs-loader").removeClass("wk-cs-block");
+									$wk_jq("#wk-cs-loader").addClass("wk-cs-none");
+								}
+							});
+						}
+					}
+				});
+			}
+
+			//It blinks the title if new message is there
+
+			function BlinkTitle(){
+				clearInterval(blinkTitle);
+				var titleTemporary = currentTitle;
+				var titleNewSet = "Message from Admin";
+				blinkTitle = setInterval(function(){
+					$wk_jq("title").text(titleNewSet);
+					var tmpVariable = titleNewSet;
+					titleNewSet = titleTemporary;
+					titleTemporary = tmpVariable;
+				},1000);
+			}
+
+			//function call when a message entered
+
+			function MsgEntered(thisthis,e) {
+				if(e.keyCode == 13 && !e.shiftKey){
+					if (navigator.userAgent.search("MSIE") >= 0) {
+
+			        }else{
+						e.preventDefault();
+					}
+					var chatHtml;
+					if($wk_jq(thisthis).val().trim() != ""){
+						var val = $wk_jq(thisthis).val().replace(/\</g,'&lt;').replace(/\>/g,'&gt;').replace(/\n/g,'</br>');
+						var isMsghttp = val.split("http://");
+						var isMsghttps = val.split("https://");
+						var isMsgwww = val.split("www");
+						if((isMsghttp[0] == "" && isMsghttp[1].length > 0) || (isMsghttps[0] == "" && isMsghttps[1].length > 0) || (isMsgwww[0] == "" && isMsgwww[1].length > 0))	{
+							if(isMsgwww[0] == "" && isMsgwww[1].length > 0)	{
+								chatHtml = 	"<div class='wk-cs-chat'>"+
+												"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><a href='http://"+val+"' target='_blank'><span>"+val+"</span>"+"</a>"+
+												"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span>"+
+												"<div class='wk-cs-chat-ref'>"+"</div></span>"+
+											"</div>";
+							}
+							else{
+								chatHtml = 	"<div class='wk-cs-chat'>"+
+												"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><a href='"+val+"' target='_blank'><span>"+val+"</span></a>"+
+													"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span>"+"<div class='wk-cs-chat-ref'"+">"+
+													"</div></span>"+
+											"</div>";
+							}
+						}
+						else
+							if(/^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(val)){
+								chatHtml = 	"<div class='wk-cs-chat'>"+
+												"<span class='wk-cs-chat-content'>"+
+													"<span class='wk-cs-inner'>"+
+														"<a href='mailto:"+val+"' target='_blank'><span>"+val+"</span></a>"+
+														"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span>"+
+													"</span>"+"<div class='wk-cs-chat-ref'></div>"+
+												"</span>"+
+											"</div>";
+							}
+							else	{
+								chatHtml = 	"<div class='wk-cs-chat'>"+
+												"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><span>"+val+"</span>"+
+												"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span>"+
+												"<div class='wk-cs-chat-ref'"+
+												">"+
+												"</div></span>"+
+											"</div>";
+							}
+						$wk_jq("#wk-cs-chat-moveable-list").append(chatHtml);
+						$wk_jq("#wk-cs-chat-list-small,#wk-cs-chat-list-big").scrollTop($wk_jq("#wk-cs-chat-moveable-list").height());
+						$wk_jq(thisthis).val("");
+						$wk_jq.ajax({
+							url 	: 	"<?php echo $this->getUrl('chatsystem/index/saveConversation')?>",
+							type 	: 	"POST",
+							dataType: 	"html",
+							data 	: 	{fromname:$wk_jq('#wk-cs-customer_hidden_name').val(),message:val,forid:$wk_jq('#wk-cs-customer_hidden').val(),agent_id:$wk_jq("#wk-cs-agent_hidden_id").val(),agent_name:$wk_jq("#agent_name_hidden").val()},
+							success : 	function(content){
+								if(content.status==0)
+									window.location = '<?php echo $this->getUrl("customer/account/login/"); ?>';
+								//  socket newCustomerMessageSubmit
+								var clientData = {
+									receiver: $wk_jq("#wk-cs-agent_hidden_id").val(),
+									message: val,
+								}
+								socket.emit('newCustomerMessageSubmit',clientData);
+							}
+						});
+					}
+				}
+				if(e.keyCode == 13 && e.shiftKey){
+					$wk_jq(thisthis).val($wk_jq(thisthis).val()).focus();
+				}
+			}
+
+			//It calls when scroll on chat window
+
+			$wk_jq("#wk-cs-chat-list-small,#wk-cs-chat-list-big").scroll(function() {
+				if($wk_jq("#wk-cs-chat-list-small,#wk-cs-chat-list-big").scrollTop() == 0){
+					conversationCount += 10;
+					var scrollHalf = true;
+					FetchMsgFromAdminForUsers(scrollHalf);
+				}
+			});
+
+			// when attachment icon clicked
+
+			$wk_jq('body').on('change','[id^="wk-file-input"]',function(event){
+				attachmentEntered(this,event);
+			});
+			function attachmentEntered(thisthis,event) {
+				var rand = Math.floor((Math.random() * 100000) + 1);
+				var name = event.originalEvent.target.files[0].name;
+				var ext = name.toLowerCase().substr(name.lastIndexOf('.') + 1);
+				var extensions = ["pdf", "png", "jpg", "jpeg", "csv", "gif"];
+				if(extensions.indexOf(ext) == -1) {
+					alert("Invalid Extension");
+					return false;
+				}
+				name = rand+name;
+
+				var chatHtml = "";
+				event.preventDefault();
+
+				var fileType = event.originalEvent.target.files[0].type;
+				if (fileType.indexOf("image") >= 0) {
+					var type = 'image';
+				} else {
+					var type = 'file';
+				}
+
+				if($wk_jq(thisthis).val().trim() != ""){
+					var val = $wk_jq(thisthis).val().replace(/\</g,'&lt;').replace(/\>/g,'&gt;').replace(/\n/g,'</br>');
+
+					for(var i=0;i<thisthis.files.length;i++){
+		                var reader = new FileReader();
+
+		                reader.onload = function(e) {
+							if(type == 'image'){
+								var tm = "<img class='wk-img' src='"+e.target.result+"'>";
+							} else if(type == 'file') {
+								var tm = name;
+							}
+
+							chatHtml = 	"<div class='wk-cs-chat'>"+
+											"<span class='wk-cs-chat-content'><span class='wk-cs-inner'><span><a href='"+e.target.result+"' target='_blank'>"+tm+"</a></span>"+
+											"<span class='wk-cs-chat-myname'><?php echo date('M-d h:i A', Mage::getModel('core/date')->timestamp(time())); ?></span></span>"+
+											"<div class='wk-cs-chat-ref'"+
+											">"+
+											"</div></span>"+
+										"</div>";
+
+							$wk_jq("#wk-cs-chat-moveable-list").append(chatHtml);
+							$wk_jq("#wk-cs-chat-list-small,#wk-cs-chat-list-big").scrollTop($wk_jq("#wk-cs-chat-moveable-list").height());
+							$wk_jq(thisthis).val("");
+
+							$wk_jq.ajax({
+								url 	: 	"<?php echo $this->getUrl('chatsystem/index/saveConversation')?>",
+								type 	: 	"POST",
+								dataType: 	"html",
+								data 	: 	{
+									// form_key : window.FORM_KEY,
+									fromname: $wk_jq('#wk-cs-customer_hidden_name').val(),
+									message	 : e.target.result,
+									file_name : name,
+									file_type : type,
+									forid:$wk_jq('#wk-cs-customer_hidden').val(),
+									agent_id:$wk_jq("#wk-cs-agent_hidden_id").val(),
+									agent_name:$wk_jq("#agent_name_hidden").val()
+								},
+								success : 	function(content){
+									if(content.status==0)
+										window.location = '<?php echo $this->getUrl("customer/account/login/"); ?>';
+									//  socket newCustomerMessageSubmit
+									var clientData = {
+										receiver: $wk_jq("#wk-cs-agent_hidden_id").val(),
+										message: val,
+									}
+									socket.emit('newCustomerMessageSubmit',clientData);
+								}
+							});
+		                }
+		                reader.readAsDataURL(thisthis.files[i]);
+		            }
+				}
+			}
+	</script>
+<?php }?>

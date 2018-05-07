@@ -1,0 +1,459 @@
+.wk-cs-chatwindow{
+	bottom: -4px;
+    position: fixed;
+    right: 60px;
+    width: 250px;
+    z-index: 999;
+	cursor:pointer;
+     border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+}
+
+.wk-cs-block{
+    display: block;
+}
+
+.wk-cs-none{
+    display: none;
+}
+
+.wk-cs-bg-grey{
+    background-color: #0E63A3;
+}
+
+.wk-cs-bg-yellow{
+    background-color: #FFB712;
+}
+
+.wk-cs-chatwindow *{
+    box-sizing:border-box;
+}
+
+.wk-cs-chat-top{
+    height: 40px;
+    padding: 7px;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #000000;
+    border-top: 1px solid #000000;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.wk-cs-admin-signal{
+	float: left;
+    height: 11px;
+    margin: 6px 0 0 10px;
+    width: 11px;
+}
+
+.wk-cs-signal-on{
+	background: url("../images/chat-signal.png") repeat scroll -3px -54px transparent;
+}
+
+.wk-cs-signal-off{
+	background: url("../images/chat-signal.png") repeat scroll -20px -3px transparent;
+}
+
+.wk-cs-fullscreen{
+	background: url("../images/chat-system-sprite.png") repeat scroll -16px -3px transparent;
+    display: block;
+    height: 11px;
+    width: 14px;
+}
+
+.wk-cs-smallscreen{
+	background: url("../images/chat-btn.png") repeat scroll -6px 149px transparent;
+    display: block;
+    height: 11px;
+    width: 11px;
+}
+
+.wk-cs-show{
+	background: url("../images/chat-system-sprite.png") repeat scroll -2px -6px transparent;
+    display: block;
+    height: 4px;
+    width: 12px;
+    margin-bottom: 7px;
+}
+
+.wk-cs-chat-btn:hover{
+	background:none repeat scroll 0 0 #515151;
+}
+
+.wk-cs-hide{
+	background: url("../images/chat-system-sprite.png") repeat scroll -2px -6px transparent;
+    display: block;
+    height: 4px;
+    margin-top: 7px;
+    width: 12px;
+}
+
+.wk-cs-close{
+	background: url("../images/chat-system-sprite.png") repeat scroll -35px -3px rgba(0, 0, 0, 0);
+    display: block;
+    height: 10px;
+    width: 10px;
+}
+
+.wk-cs-chat-container{
+	height: 350px;
+	background:#D9EDF8;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #000000;
+}
+
+.wk-cs-chat-btn{
+	display: block;
+    float: right;
+    padding: 4px;
+    cursor: pointer;
+    margin-left: 3px;
+}
+
+.wk-cs-enter-text-small{
+    line-height: 15px;
+    overflow-y: auto;
+    resize: none;
+    width: 85%;
+	float: right;
+}
+input[id^="wk-file-input"] {
+    display: none;
+}
+
+.wk-image-upload {
+	display: inline;
+}
+
+.wk-img {
+	width: 100px;
+	height: auto;
+}
+
+#wk-admin-status-div {
+	width: 100%;
+	height: 30px;
+	background-color: #DCDCDC;
+}
+
+#wk-admin-status-div h3{
+	text-align: center;
+	padding-top: 5px;
+}
+
+#wk-admin-status {
+	float: left;
+	width: 40%;
+	height: 30px;
+}
+
+.wk-cs-status {
+	display: inline-block;
+    height: 10px;
+    width: 10px;
+	margin-bottom: 10px;
+}
+
+.wk-cs-status-on{
+    background: url("../images/chat-signal.png") repeat scroll -3px -54px transparent;
+}
+
+.wk-cs-status-busy{
+    background: url("../images/chat-signal.png") repeat scroll -3px -89px transparent;
+}
+
+.wk-cs-status-off{
+    height: 23px;
+    width: 25px;
+    background: url("../images/chat-signal.png") repeat scroll -20px -3px transparent;
+}
+
+.wk-cs-enter-text-container-small{
+    width: 100%;
+    height: 40px;
+}
+
+.wk-cs-chat-list-small{
+    cursor: default;
+    display: block;
+    height: 311px;
+    overflow-y: auto;
+    overflow-x:hidden;
+    padding: 3px 3px 0;
+}
+
+.wk-cs-enter-text-big{
+    line-height: 15px;
+    overflow-y: auto;
+    resize: none;
+    width: 100%;
+}
+
+.wk-cs-enter-text-container-big{
+    width: 100%;
+    height: 40px;
+}
+
+.wk-cs-chat-list-big{
+    cursor: default;
+    display: block;
+    height: 461px;
+    overflow-y: auto;
+    padding: 3px 3px 0;
+}
+
+.wk-cs-chat-moveable-list{
+	display: block;
+    height: auto;
+    width: 100%;
+}
+
+.wk-cs-inner-user{
+    display: inline-block;
+    padding: 5px;
+    position: relative;
+    background-color: #fff;
+    border:1px solid #A7DDE9;
+    color: #000;
+}
+
+.wk-cs-inner-user:before
+{
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 5px 8px 5px 0;
+    border-color: #A7DDE9 rgba(218,236,248,0);
+    display: block;
+    width: 0;
+    z-index: 1;
+    left: -9px;
+    top: 5px;
+    background-color: #F0F0F0;
+}
+
+.wk-cs-inner-user:after {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 7px 9px 10px 0;
+    border-color: #D9EDF8 rgba(0,0,0,0);
+    display: block;
+    width: 0;
+    z-index: 1;
+    left: -9px;
+    top: 5px;
+    background-color: #fff;
+}
+
+.wk-cs-inner{
+    display: inline-block;
+    max-width: 75%;
+    padding: 5px;
+    position: relative;
+    background-color:#fff;
+    border:1px solid #A7DDE9;
+    color: #000;
+}
+
+.wk-cs-inner:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: #D9EDF8 rgba(218,236,248,0));
+    display: block;
+    width: 0;
+    z-index: 1;
+    right: -9px;
+    bottom: 5px;
+    background-color:#D9EDF8;
+}
+
+.wk-cs-inner:after {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 8px 0 13px 9px;
+    border-color: #D9EDF8 rgba(0,0,0,0);
+    display: block;
+    width: 0;
+    z-index: 1;
+    right: -9px;
+    bottom: 5px;
+    background-color:#fff;
+}
+
+.wk-cs-chat-user{
+    padding: 5px;
+    word-wrap: break-word;
+    display: inline-block;
+    width: 100%;
+    text-align: left;
+}
+
+.wk-cs-chat{
+    padding: 5px;
+    word-wrap: break-word;
+    text-align: right;
+    display: block;
+}
+
+.wk-cs-chat-content-user{
+    color: #3e3d3d;
+    width: 75%;
+    display: inline-block;
+
+}
+
+.wk-cs-inner span{
+    display: block;
+    text-align: justify;
+}
+
+.wk-cs-inner-user span{
+    display: block;
+    text-align: justify;
+}
+
+.wk-cs-chat-myname{
+    font-size: 10px;
+    margin-top: 5px;
+}
+
+.wk-cs-chat-name{
+    font-size: 10px;
+    margin-top: 5px;
+}
+
+.wk-cs-chat-content{
+	color: #3E3D3D;
+    width: 75%;
+}
+
+.wk-cs-chat-ref-user{
+	color: #000000;
+    display: inline-block;
+    font-weight: bold;
+    background: url("../images/pic-user.png");
+    height: 40px;
+    width: 40px;
+    margin-right: 11px;
+    float: left;
+}
+
+.wk-cs-chat-ref{
+    width: 40px;
+    height: 40px;
+    margin-left: 9px;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.wk-cs-arrow{
+    border-color: #8B8B8B transparent transparent;
+    border-style: solid;
+    border-width: 15px 15px 0;
+    bottom: -15px;
+    position: absolute;
+    right: 13px;
+}
+
+.wk-cs-fetch-content-limit{
+    display: none;
+}
+
+.wk-cs-loader{
+    background: url("../images/loader.gif") no-repeat scroll 0 0 #fff;
+    display: none;
+    height: 16px;
+    margin: 0 auto;
+    width: 17px;
+}
+
+.wk-cs-loader-container{
+    position: absolute;
+    text-align: center;
+    top: 44px;
+    width: 91%;
+}
+
+.wk-cs-user-name{
+    color: #FFFFFF;
+    font-family: tahoma;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 25px;
+    margin-left: 10px;
+    text-transform: capitalize;
+    display: inline-block;
+    overflow: hidden;
+    height: 27px;
+    width: 150px;
+}
+
+#wk-cs-buddy-list-container{
+    background: none repeat scroll 0 0 #CCCCCC;
+    border: 5px solid #4B4949;
+    height: 98.6%;
+    left: -255px;
+    position: fixed;
+    top: 0;
+    width: 250px;
+    z-index: 100;
+}
+
+#wk-cs-buddy-list-opener{
+    background: none repeat scroll 0 0 #fff;
+    border: 5px solid #4B4949;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+    padding: 3px 10px;
+    position: absolute;
+    right: -67px;
+    top: 100px;
+}
+
+#wk-cs-buddy-list-opener-icon{
+    background: url("../images/sprite.png") repeat scroll -139px -195px transparent;
+    display: block;
+    height: 22px;
+    width: 37px;
+}
+
+#wk-cs-buddy-list{
+    height: 95%;
+    overflow-y: auto;
+}
+
+.wk-cs-chat-buddies{
+    border-bottom: 1px dotted;
+    color: #525252;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 15px;
+    padding: 5px 5px 5px 30px;
+    text-transform: capitalize;
+}
+
+.wk-cs-buddy-icon{
+    background: url("../images/sprite.png") repeat scroll -194px -143px transparent;
+    display: inline-block;
+    height: 25px;
+    left: -15px;
+    position: relative;
+    width: 24px;
+}
+
+.wk-search-box{
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+}
+
+.wk-cs-searchBox {
+    border: 3px solid;
+    padding: 2%;
+    width: 94%;
+}

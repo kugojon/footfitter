@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<chatsystem_adminhtml_index_index>
+        <reference name="content">
+            <block type="chatsystem/adminhtml_chats" name="chatsystem"/>
+        </reference>
+    </chatsystem_adminhtml_index_index>
+    <chatsystem_adminhtml_chatsystem_index>
+        <reference name="content">
+            <block type="chatsystem/adminhtml_permissions_user" name="chatsystem"/>
+        </reference>
+    </chatsystem_adminhtml_chatsystem_index>
+    <chatsystem_adminhtml_index_individualchat>
+        <reference name="content">
+            <block type="chatsystem/adminhtml_individualchat" name="chatsystem"/>
+        </reference>
+    </chatsystem_adminhtml_index_individualchat>
+    <chatsystem_adminhtml_index_startchat>
+        <reference name="content">
+            <block type="chatsystem/adminhtml_chatsystem" name="chatsystem.admin45" template="chatsystemadmin/chatsystemadmin.phtml"/>
+        </reference>
+    </chatsystem_adminhtml_index_startchat>
+    <chatsystem_adminhtml_review_index>
+        <reference name="content">
+            <block type="chatsystem/adminhtml_review" name="review"/>
+        </reference>
+    </chatsystem_adminhtml_review_index>
+</layout>

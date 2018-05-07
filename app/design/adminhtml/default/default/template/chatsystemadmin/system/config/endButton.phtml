@@ -1,0 +1,31 @@
+<script type="text/javascript">
+/**
+ * @category   Webkul
+ * @package    Webkul_Chatsystem
+ * @author     Webkul Software Private Limited
+ * @copyright  Copyright (c) 2010-2017 Webkul Software Private Limited (https://webkul.com)
+ * @license    https://store.webkul.com/license.html
+ */
+    //<![CDATA[
+    function end() {
+        var host = document.getElementById('chatsystem_chatsystem_host').value;
+        var port = document.getElementById('chatsystem_chatsystem_port').value;
+        new Ajax.Request('<?php echo $this->getAjaxCheckUrl() ?>', {
+            method:     'get',
+            parameters: {
+                'host':host,
+                'port':port
+            },
+            onSuccess: function(transport){
+                if (transport.responseText){
+                    console.log(transport.responseText);
+                    document.getElementById('chatsystem_end').hide();
+                    document.getElementById('chatsystem_start').show();
+                }
+            }
+        });
+    }
+    //]]>
+</script>
+
+<?php echo $this->getButtonHtml() ?>

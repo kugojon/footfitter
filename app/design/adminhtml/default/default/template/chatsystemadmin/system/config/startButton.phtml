@@ -1,0 +1,50 @@
+<script type="text/javascript">
+/**
+ * @category   Webkul
+ * @package    Webkul_Chatsystem
+ * @author     Webkul Software Private Limited
+ * @copyright  Copyright (c) 2010-2017 Webkul Software Private Limited (https://webkul.com)
+ * @license    https://store.webkul.com/license.html
+ */
+    //<![CDATA[
+    function start() {
+        var host = document.getElementById('chatsystem_chatsystem_host').value;
+        var port = document.getElementById('chatsystem_chatsystem_port').value;
+        new Ajax.Request('<?php echo $this->getAjaxCheckUrl() ?>', {
+            method:     'get',
+            parameters: {
+                'host':host,
+                'port':port
+            },
+            onSuccess: function(transport){
+                if (transport.responseText){
+                    // console.log(transport.responseText);
+                    document.getElementById('chatsystem_start').hide();
+                    document.getElementById('chatsystem_end').show();
+                }
+            }
+        });
+    }
+    //]]>
+</script>
+<script type="text/javascript">
+	if(typeof jQuery == 'undefined'){
+		document.write(unescape("%3Cscript src='https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E"));
+	}
+</script>
+<script type="text/javascript">
+	jQuery.noConflict();
+    jQuery(document).ready(function(){
+
+        var status = "<?php echo Mage::getStoreConfig("chatsystem/chatsystem/serverstatus"); ?>";
+        if(status == "start") {
+            jQuery("#chatsystem_start").hide();
+        } else if(status == "stop") {
+            jQuery("#chatsystem_end").hide();
+        } else {
+            jQuery("#chatsystem_end").hide();
+        }
+
+    });
+</script>
+<?php echo $this->getButtonHtml() ?>

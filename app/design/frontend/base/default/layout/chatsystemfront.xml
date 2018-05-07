@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+   <default>
+        <label>All Pages</label>
+        <reference name="content">
+        	<block type="chatsystem/chatsystem" name="chatsystem" template="chatsystemfront/chatsystemfront.phtml"/>
+        </reference>
+    </default>
+</layout>

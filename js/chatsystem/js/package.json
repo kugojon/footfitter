@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "description": "Webkul Magento Chat System",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Webkul Software Pvt Ltd",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.2",
+    "file-system": "^2.2.2",
+    "socket.io": "^1.7.2"
+  }
+}
