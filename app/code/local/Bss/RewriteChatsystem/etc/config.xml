@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Bss_RewriteChatsystem>
+      <version>0.1.0</version>
+    </Bss_RewriteChatsystem>
+  </modules>
+  <frontend>
+    <routers>
+      <rewritechatsystem>
+        <use>standard</use>
+          <args>
+            <module>Bss_RewriteChatsystem</module>
+            <frontName>rewritechatsystem</frontName>
+          </args>
+      </rewritechatsystem>
+    </routers>
+  </frontend>
+  <global>
+    <rewrite>        
+            <bss_rewritechatsystem_chatlogincontroller>
+                <from><![CDATA[#^/chatsystem/chatlogin/#]]></from> <!-- Webkul_ChatSystem_chatloginController  -->
+                <to>/rewritechatsystem/chatlogin/</to> <!-- Bss_RewriteChatsystem_chatloginController  -->
+            </bss_rewritechatsystem_chatlogincontroller>
+    </rewrite>
+    <helpers>
+      <rewritechatsystem>
+        <class>Bss_RewriteChatsystem_Helper</class>
+      </rewritechatsystem>
+    </helpers>
+  </global>
+  <admin>
+  <routers>
+    <rewritechatsystem>
+      <use>admin</use>
+    <args>
+      <module>Bss_RewriteChatsystem</module>
+      <frontName>admin_rewritechatsystem</frontName>
+    </args>
+    </rewritechatsystem>
+  </routers>
+  </admin>
+</config> 
