@@ -132,7 +132,7 @@
         <?php if ($_product->getVideo()):?>
             <div class="video-product">
                 <?php echo $url_video  ?>
-                <iframe allow="accelerometer; autoplay;" style="max-width: 100%;" width="560" height="315" src="#" frameborder="0" allowfullscreen ></iframe>
+                <iframe allow="accelerometer; autoplay;" style="max-width: 100%;" width="560" height="315" src="javascript:void();" frameborder="0" allowfullscreen ></iframe>
             </div>
         <?php endif;?>
 	</div>
@@ -158,7 +158,7 @@
 
             <?php if ($_product->getVideo()):?>
                 <li>
-                    <a class='cloud-zoom-gallery show-video-product' href="#" ><img src="<?php echo $thumbnail ?>" /></a>
+                    <a class='cloud-zoom-gallery show-video-product' href="javascript:void();" ><img src="<?php echo $thumbnail ?>" /></a>
                 </li>
              <?php endif;?>
 			</ul>
@@ -195,7 +195,7 @@
             });
             jQuery('.image-product').on('click', function(){
                 jQuery('.video-product').hide();
-                jQuery(".video-product iframe").attr('src', '');
+                jQuery(".video-product iframe").attr('src', 'javascript:void();');
                 jQuery('.product-image-gallery').show();
             });
         </script>
