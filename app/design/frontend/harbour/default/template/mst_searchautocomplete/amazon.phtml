@@ -22,23 +22,23 @@ $_url              = $this->getAjaxUrl();
             <select name="cat" class="category UI-CATEGORY">
                 <option value="0"><?php //echo $this->__('All') ?></option>
                 <?php //foreach ($this->getCategories() as $_category): ?>
-                <option value="<?php //echo $_category->getId() ?>" <?php //if ($_currentCategory == $_category->getId()): ?>selected<?php// endif ?>>
-                    <?php// echo $_category->getName() ?>
+                <option value="<?php //echo $_category->getId() ?>" <?php //if ($_currentCategory == $_category->getId()): ?>selected<?php // endif ?>>
+                    <?php // echo $_category->getName() ?>
                 </option>
-                <?php// endforeach ?>
+                <?php // endforeach ?>
             </select>
         </div>
-        <?php// elseif ($_filterType == 'attribute'): ?>
+        <?php // elseif ($_filterType == 'attribute'): ?>
             <div class="nav-search-in">
-                <span class="category-fake UI-CATEGORY-TEXT"><?php// echo $this->__('All') ?></span>
+                <span class="category-fake UI-CATEGORY-TEXT"><?php // echo $this->__('All') ?></span>
                 <span class="nav-down-arrow"></span>
                 <select name="attr" class="category UI-CATEGORY">
                     <option value="0"><?php //echo $this->__('All') ?></option>
                     <?php //foreach ($this->getAttributes() as $_code => $_name): ?>
-                    <option value="<?php //echo $_code ?>" <?php// if ($_currentAttribute == $_code): ?>selected<?php// endif ?>>
-                        <?php// echo $_name ?>
+                    <option value="<?php //echo $_code ?>" <?php // if ($_currentAttribute == $_code): ?>selected<?php // endif ?>>
+                        <?php // echo $_name ?>
                     </option>
-                    <?php// endforeach ?>
+                    <?php // endforeach ?>
                 </select>
             </div>-->
         <?php //endif ?>

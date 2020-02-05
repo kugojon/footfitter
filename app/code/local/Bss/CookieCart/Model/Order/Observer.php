@@ -21,10 +21,10 @@ class Bss_CookieCart_Model_Order_Observer
 
             $productRemove = '';
             $flag = 0;
-            if (($_COOKIE['cookiecart_' . $domain] != 'bss_cookiecart') && !$isProductInCart) {
+            if ((!empty($_COOKIE['cookiecart_' . $domain]) != 'bss_cookiecart') && !$isProductInCart) {
                 $cart = Mage::getSingleton('checkout/cart');
                 $cart->init();
-                $data_unserialize = unserialize($_COOKIE['cookiecart_' . $domain]);
+                $data_unserialize = unserialize(!empty($_COOKIE['cookiecart_' . $domain]));
                 foreach ($data_unserialize as $data) {
                     $product = Mage::getModel('catalog/product')->load($data['product']);
                     if (!$product) {

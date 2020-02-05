@@ -136,14 +136,14 @@
 									<?php //if((count($blockSwitch->getStores())) > 1) :?>
 										<span class="language">
 											<?php //$currentLang = Mage::app()->getStore()->getName(); ?>
-											<img src="<?php// echo $this->getSkinUrl('images/lang/'.$this->escapeHtml($currentLang).'.png') ?>" <?php //echo MAGE::helper('ThemeOptionsHarbour/Retina')->getRetinaData('languages', $currentLang); ?> alt="<?php// echo $currentLang; ?>" />
+											<img src="<?php // echo $this->getSkinUrl('images/lang/'.$this->escapeHtml($currentLang).'.png') ?>" <?php //echo MAGE::helper('ThemeOptionsHarbour/Retina')->getRetinaData('languages', $currentLang); ?> alt="<?php // echo $currentLang; ?>" />
 										</span>
 									<?php //endif; ?>
 									<?php //if($blockCurrency->getCurrencyCount() > 1): ?>
 										<span class="currency">
 											<?php //echo '<span class="icon">' . Mage::app()->getLocale()->currency(Mage::app()->getStore()->getCurrentCurrencyCode())->getSymbol() . '</span>' . $currency_code = Mage::app()->getStore()->getCurrentCurrencyCode() .'<i class="fa fa-caret-down"></i>'; ?>
 										</span>
-									<?php// endif; ?>
+									<?php // endif; ?>
 								</div>
 								<div class="language-currency-dropdown">
 									<?php //echo $this->getChildHtml('currency') ?>
@@ -151,15 +151,15 @@
 								</div>
 								<div class="clear"></div>
 							</div>
-						<?php// endif; ?>
+						<?php // endif; ?>
 					</div>
 					<div class="right">
 						<?php //if ($this->getLayout()->createBlock('cms/block')->setBlockId('harbour_header_phone')->toHtml()): ?>
 							<div class="left"><?php //echo $this->getLayout()->createBlock('cms/block')->setBlockId('harbour_header_phone')->toHtml() ?> </div>	
 						<?php //endif; ?>
-						<p class="welcome-msg"><span><?php //echo $this->getWelcome() ?><?php// echo $this->getAdditionalHtml() ?></span></p>
+						<p class="welcome-msg"><span><?php //echo $this->getWelcome() ?><?php // echo $this->getAdditionalHtml() ?></span></p>
 					</div> -->
-					<?php if($_COOKIE["shippingClose"]==""){
+					<?php if(!empty($_COOKIE["shippingClose"])==""){
 						echo $this->getLayout()->createBlock('cms/block')->setBlockId('mobile-free-shipping')->toHtml();
 					} ?>
 					<?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('free-shipping')->toHtml() ?>
